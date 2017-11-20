@@ -1,2 +1,10 @@
-*.class
-*.log
+logs
+target
+/.idea
+/.idea_modules
+*.iml
+/.classpath
+/project/project
+/project/target
+/.settings
+/.project
