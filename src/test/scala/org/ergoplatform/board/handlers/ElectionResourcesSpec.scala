@@ -10,7 +10,7 @@ import org.ergoplatform.board.protocol.{ElectionCreate, ElectionProlong, Electio
 import org.scalatest.{FlatSpec, Matchers}
 import play.api.libs.json.{JsObject, Json}
 
-class ElectionHandlerSpec extends FlatSpec
+class ElectionResourcesSpec extends FlatSpec
   with Matchers
   with ScalatestRouteTest
   with PlayJsonSupport
@@ -18,7 +18,7 @@ class ElectionHandlerSpec extends FlatSpec
 
   import org.ergoplatform.board.ApiErrorHandler._
   val service = new FakeElectionService
-  val handler = new ElectionHandler(service)
+  val handler = new ElectionResources(service)
   val route  = Route.seal(handler.routes)
 
   import ElectionCreate._

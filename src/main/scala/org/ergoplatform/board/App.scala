@@ -5,8 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import org.ergoplatform.board.handlers.ElectionHandler
+import org.ergoplatform.board.handlers.ElectionResources
 import org.ergoplatform.board.services.ElectionServiceImpl
+import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
 import reactivemongo.api.{DefaultDB, MongoConnection}
 
 import scala.concurrent.Future
@@ -44,8 +45,10 @@ object App extends Mongo {
     val dbName = Try(config.getString("mongodb.dbName")).getOrElse("board")
     def dbF: Future[DefaultDB] = connection.database(dbName)
     val electionRoute = dbF.map { db =>
-      new ElectionServiceImpl(db)
-    }.map {service => new ElectionHandler(service).routes}
+      val eStore = new ElectionStoreImpl(db)
+      val vStore = new VoteStoreImpl(db)
+      new ElectionServiceImpl(eStore, vStore)
+    }.map {service => new ElectionResources(service).routes}
     electionRoute
   }
 }

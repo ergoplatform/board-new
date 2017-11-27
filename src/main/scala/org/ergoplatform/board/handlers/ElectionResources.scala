@@ -11,7 +11,7 @@ import org.ergoplatform.board.utils.CommonCodecs
 
 import scala.concurrent.ExecutionContext
 
-class ElectionHandler(service: ElectionService)(implicit ec: ExecutionContext, mat: ActorMaterializer)
+class ElectionResources(service: ElectionService)(implicit ec: ExecutionContext, mat: ActorMaterializer)
   extends PlayJsonSupport with CommonDirectives with CommonCodecs {
 
   val routes = pathPrefix("elections") {

@@ -3,6 +3,8 @@ package org.ergoplatform.board.services
 import org.ergoplatform.board.models._
 import org.ergoplatform.board.utils.{RichBytes, RichString}
 
+import scala.concurrent.Future
+
 object SignService extends RichBytes with RichString {
 
   import scorex.crypto.signatures._
@@ -14,7 +16,13 @@ object SignService extends RichBytes with RichString {
     Curve25519.verify(signatureBytes, messageBytes, pkBytes)
   }
 
-  def validate(signedData: SignedData, m: String): Boolean = validate(signedData.pk, m, signedData.sign)
+  def validate(signedData: SignedData, m: String): Boolean = validate(signedData.publicKey, m, signedData.sign)
+
+  def validateFuture(signedData: SignedData, m: String): Future[Unit] = if (validate(signedData, m)) {
+    Future.successful(())
+  } else {
+    Future.failed(new IllegalArgumentException("Cannot verify signed data"))
+  }
 
   def sign(message: String, keys: KeysRecord): SignedData = {
     val privKeyBytes = PrivateKey @@ keys.privateKey.to64Bytes

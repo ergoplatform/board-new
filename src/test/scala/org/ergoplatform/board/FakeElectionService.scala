@@ -1,7 +1,7 @@
 package org.ergoplatform.board
 
 import org.ergoplatform.board.models.{ElectionRecord, MongoId}
-import org.ergoplatform.board.protocol.{ElectionCreate, ElectionProlong, ElectionView}
+import org.ergoplatform.board.protocol.{ElectionCreate, ElectionProlong, ElectionView, VoteCreate}
 import org.ergoplatform.board.services.{ElectionService, SignService}
 
 import scala.collection.concurrent.TrieMap
@@ -34,4 +34,10 @@ class FakeElectionService extends ElectionService with FutureHelpers {
       ElectionView.fromRecord(data(e.id)).asFut
     case None => notFound(id).asFut
   }
+
+  override def vote(cmd: VoteCreate) = ???
+
+  override def getVotesCount(electionId: MongoId) = ???
+
+  override def getVotes(electionId: MongoId, offset: Int, limit: Int) = ???
 }
