@@ -17,14 +17,15 @@ class ElectionResourcesSpec extends FlatSpec
   with FutureHelpers {
 
   import org.ergoplatform.board.ApiErrorHandler._
+  import ElectionCreate._
+  import ElectionView._
+
   val service = new FakeElectionService
   val handler = new ElectionResources(service)
   val route  = Route.seal(handler.routes)
 
-  import ElectionCreate._
-  import ElectionView._
 
-  it should "create election correclty" in {
+  it should "create election correctly" in {
     val cmd = ElectionCreate(100L, 200L, Some("test"))
 
     Post("/elections",cmd)  ~> route ~> check {
@@ -85,5 +86,4 @@ class ElectionResourcesSpec extends FlatSpec
       (data \ "result").as[Boolean] shouldBe false
     }
   }
-
 }
