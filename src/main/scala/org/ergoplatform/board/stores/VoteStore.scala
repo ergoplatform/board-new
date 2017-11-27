@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait VoteStore {
 
-  def create(cmd: VoteCreate, boardSign: SignedData): Future[VoteRecord]
+  def create(electionId: MongoId, cmd: VoteCreate, boardSign: SignedData): Future[VoteRecord]
 
   def getAllByElectionId(electionId: MongoId, offset: Int, limit: Int): Future[List[VoteRecord]]
 
@@ -23,12 +23,12 @@ class VoteStoreImpl(db: DefaultDB)
 
   import reactivemongo.play.json._
 
-  override def create(cmd: VoteCreate, boardSign: SignedData) = {
+  override def create(electionId: MongoId, cmd: VoteCreate, boardSign: SignedData) = {
     val id = MongoId()
-    getIndexFor(cmd.electionId).flatMap{ index =>
+    getIndexFor(electionId).flatMap{ index =>
       val timestamp = System.currentTimeMillis()
       val vote = VoteRecord(id,
-        cmd.electionId,
+        electionId,
         cmd.groupId,
         cmd.sectionId,
         index,

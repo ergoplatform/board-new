@@ -35,7 +35,7 @@ class FakeElectionService extends ElectionService with FutureHelpers {
     case None => notFound(id).asFut
   }
 
-  override def vote(cmd: VoteCreate) = ???
+  override def vote(electionId: MongoId, cmd: VoteCreate) = ???
 
   override def getVotesCount(electionId: MongoId) = ???
 

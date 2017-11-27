@@ -19,7 +19,7 @@ trait ElectionService {
 
   def extendDuration(id: MongoId, extendFor: ElectionProlong): Future[ElectionView]
 
-  def vote(cmd: VoteCreate): Future[VoteView]
+  def vote(electionId: MongoId, cmd: VoteCreate): Future[VoteView]
 
   def getVotesCount(electionId: MongoId): Future[Int]
 
@@ -52,12 +52,12 @@ class ElectionServiceImpl(eStore: ElectionStore, vStore: VoteStore)
     }
   }
 
-  def vote(cmd: VoteCreate): Future[VoteView] = for {
+  def vote(electionId: MongoId, cmd: VoteCreate): Future[VoteView] = for {
     _ <- SignService.validateFuture(cmd.signature, cmd.m)
-    _ <- eStore.exist(cmd.electionId)
-    election <- eStore.get(cmd.electionId)
+    _ <- eStore.exist(electionId)
+    election <- eStore.get(electionId)
     signedByBoardData = SignService.sign(Json.stringify(Json.toJson(cmd)), election.keys)
-    vote <- vStore.create(cmd, signedByBoardData)
+    vote <- vStore.create(electionId, cmd, signedByBoardData)
     voteView = VoteView.fromRecord(vote)
   } yield voteView
 
