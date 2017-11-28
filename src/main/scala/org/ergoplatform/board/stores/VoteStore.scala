@@ -2,6 +2,7 @@ package org.ergoplatform.board.stores
 
 import org.ergoplatform.board.models.{MongoId, SignedData, VoteRecord}
 import org.ergoplatform.board.protocol.VoteCreate
+import org.ergoplatform.board.services.HashService
 import play.api.libs.json.{JsValue, Json}
 import reactivemongo.api.{Cursor, DefaultDB, QueryOpts}
 
@@ -25,13 +26,15 @@ class VoteStoreImpl(db: DefaultDB)
 
   override def create(electionId: MongoId, cmd: VoteCreate, boardSign: SignedData) = {
     val id = MongoId()
-    getIndexFor(electionId).flatMap{ index =>
+    getIndexAndHash(electionId).flatMap{ case (index, prevHash) =>
+      val hash = HashService.hash(Json.stringify(Json.toJson(cmd)), Some(prevHash).filterNot(_.isEmpty))
       val timestamp = System.currentTimeMillis()
       val vote = VoteRecord(id,
         electionId,
         cmd.groupId,
         cmd.sectionId,
-        index,
+        index + 1,
+        hash,
         cmd.m,
         cmd.signature,
         boardSign,
@@ -54,16 +57,19 @@ class VoteStoreImpl(db: DefaultDB)
     collection.count(Some(query))
   }
 
-  def getIndexFor(electionId: MongoId): Future[Long] = {
+  def getIndexAndHash(electionId: MongoId): Future[(Long, String)] = {
     collection
-      .find(Json.obj("electionId" -> electionId), Json.obj("index" -> 1))
+      .find(Json.obj("electionId" -> electionId), Json.obj("index" -> 1, "hash" -> 1))
       .sort(Json.obj("index" -> -1))
       .cursor[JsValue]()
       .collect[List](1, Cursor.FailOnError[List[JsValue]]())
       .map {
-        _.headOption
-          .flatMap { v => (v \ "index").asOpt[Long] }
-          .getOrElse(0L)
+        _.headOption.map { v =>
+          val index = (v \ "index").asOpt[Long].getOrElse(0L)
+          val hash = (v \ "hash").asOpt[String].getOrElse("")
+
+          (index, hash)
+        }.getOrElse((0L, ""))
       }
   }
 }

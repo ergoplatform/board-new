@@ -30,7 +30,7 @@ class ElectionResources(service: ElectionService)(implicit ec: ExecutionContext,
         (pathPrefix("count") & get) {
           onSuccess(service.getVotesCount(mongoId)) { v => complete(v) }
         } ~ (post & entity(as[VoteCreate])) { cmd =>
-          onSuccess(service.vote(mongoId, cmd)) { v => complete(v) }
+          onSuccess(service.vote(mongoId, cmd)) { v => complete(StatusCodes.Created -> v) }
         } ~ (get & parameters("offset".as[Int] ? 0, "limit".as[Int] ? 20)) { (o, l) =>
           onSuccess(service.getVotes(mongoId, o, l)) { v => complete(v) }
         }

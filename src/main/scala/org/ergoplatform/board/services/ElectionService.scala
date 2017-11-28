@@ -43,14 +43,9 @@ class ElectionServiceImpl(eStore: ElectionStore, vStore: VoteStore)
 
   def exist(id: MongoId): Future[Boolean] = eStore.exist(id)
 
-  def extendDuration(id: MongoId, extendFor: ElectionProlong): Future[ElectionView] = {
-    eStore.get(id).flatMap { e =>
-      val newEnd = e.end + extendFor.prolongDuration
-      eStore.update(id, Json.obj("$set" -> Json.obj("end" -> newEnd)))
-    }.map {
-      ElectionView.fromRecord
-    }
-  }
+  def extendDuration(id: MongoId, extendFor: ElectionProlong): Future[ElectionView] = eStore
+    .extend(id, extendFor.prolongDuration)
+    .map(ElectionView.fromRecord)
 
   def vote(electionId: MongoId, cmd: VoteCreate): Future[VoteView] = for {
     _ <- SignService.validateFuture(cmd.signature, cmd.m)

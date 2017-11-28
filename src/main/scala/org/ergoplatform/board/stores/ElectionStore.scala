@@ -1,7 +1,7 @@
 package org.ergoplatform.board.stores
 
 import org.ergoplatform.board.models.{ElectionRecord, MongoId}
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.DefaultDB
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,7 +16,7 @@ trait ElectionStore {
 
   def exist(id: MongoId): Future[Boolean]
 
-  def update(mongoId: MongoId, data: JsObject): Future[ElectionRecord]
+  def extend(mongoId: MongoId, extendFor: Long): Future[ElectionRecord]
 
 }
 
@@ -29,8 +29,10 @@ class ElectionStoreImpl(db: DefaultDB)
 
   def get(id: MongoId): Future[ElectionRecord] = getById(id)
 
-  def update(id: MongoId, data: JsObject): Future[ElectionRecord] =
-    getById(id).flatMap { e => updateById(id, data) }
+  def extend(id: MongoId, extendFor: Long): Future[ElectionRecord] = getById(id).flatMap { e =>
+    val newEnd = e.end + extendFor
+    updateById(id, Json.obj("$set" -> Json.obj("end" -> newEnd)))
+  }
 
   override def create(rec: ElectionRecord) = insert(rec)
 
