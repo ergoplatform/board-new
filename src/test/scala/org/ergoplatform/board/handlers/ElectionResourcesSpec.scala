@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import org.ergoplatform.board.models.{MongoId, SignedData}
+import org.ergoplatform.board.models.SignedData
 import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.services.{ElectionServiceImpl, HashService, SignService}
 import org.ergoplatform.board.{FutureHelpers, InMemoryElectionStore, InMemoryVoteStore}
@@ -21,11 +21,11 @@ class ElectionResourcesSpec extends FlatSpec
   import ElectionView._
   import VoteCreate._
   import VoteView._
+  import akka.http.scaladsl.testkit.RouteTestTimeout
+  import akka.testkit.TestDuration
   import org.ergoplatform.board.ApiErrorHandler._
 
   import scala.concurrent.duration._
-  import akka.http.scaladsl.testkit.RouteTestTimeout
-  import akka.testkit.TestDuration
 
   implicit val timeout = RouteTestTimeout(10.seconds dilated)
 
@@ -81,7 +81,7 @@ class ElectionResourcesSpec extends FlatSpec
       (data \ "result").as[Boolean] shouldBe true
     }
 
-    eStore.data.remove(MongoId(election.id))
+    eStore.data.remove(election.id)
 
     Get(s"/elections/${election.id}") ~> route ~> check {
       status shouldBe StatusCodes.NotFound
@@ -110,7 +110,7 @@ class ElectionResourcesSpec extends FlatSpec
     }
 
     val election = eStore.data.head._2
-    val electionId = election.id
+    val electionId = election._id
 
     val keys1 = SignService.generateRandomKeyPair()
     val keys2 = SignService.generateRandomKeyPair()
@@ -130,28 +130,28 @@ class ElectionResourcesSpec extends FlatSpec
     val cmd1 = VoteCreate(gId, sId, m1, m1Signed)
     val cmd2 = VoteCreate(gId, sId, m2, m2Signed)
 
-    Post(s"/elections/${electionId.id}/votes", cmd1) ~> route ~> check {
+    Post(s"/elections/$electionId/votes", cmd1) ~> route ~> check {
       status shouldBe StatusCodes.Created
       val data = entityAs[VoteView]
       data.electionId shouldEqual electionId
       data.m shouldEqual m1
     }
 
-    Post(s"/elections/${electionId.id}/votes", cmd2) ~> route ~> check {
+    Post(s"/elections/$electionId/votes", cmd2) ~> route ~> check {
       status shouldBe StatusCodes.Created
       val data = entityAs[VoteView]
       data.electionId shouldEqual electionId
       data.m shouldEqual m2
     }
 
-    Post(s"/elections/${electionId.id}/votes", fraudCmd) ~> route ~> check {
+    Post(s"/elections/$electionId/votes", fraudCmd) ~> route ~> check {
       status shouldBe StatusCodes.BadRequest
     }
 
     val hash1 = HashService.hash(Json.stringify(Json.toJson(cmd1)))
     val hash2 = HashService.hash(Json.stringify(Json.toJson(cmd2)), Some(hash1))
 
-    Get(s"/elections/${electionId.id}/votes") ~> route ~> check {
+    Get(s"/elections/$electionId/votes") ~> route ~> check {
       status shouldBe StatusCodes.OK
       val data = entityAs[List[VoteView]]
 

@@ -2,8 +2,8 @@ package org.ergoplatform.board.models
 
 import play.api.libs.json.Json
 
-case class VoteRecord(_id: MongoId,
-                      electionId: MongoId,
+case class VoteRecord(_id: String,
+                      electionId: String,
                       groupId: String,
                       sectionId: String,
                       index: Long,
@@ -15,5 +15,4 @@ case class VoteRecord(_id: MongoId,
 
 object VoteRecord {
   implicit val fmt = Json.format[VoteRecord]
-
 }

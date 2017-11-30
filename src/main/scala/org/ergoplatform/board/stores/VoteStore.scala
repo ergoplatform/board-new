@@ -1,6 +1,8 @@
 package org.ergoplatform.board.stores
 
-import org.ergoplatform.board.models.{MongoId, SignedData, VoteRecord}
+import java.util.UUID
+
+import org.ergoplatform.board.models.{SignedData, VoteRecord}
 import org.ergoplatform.board.protocol.VoteCreate
 import org.ergoplatform.board.services.HashService
 import play.api.libs.json.{JsValue, Json}
@@ -10,22 +12,22 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait VoteStore {
 
-  def create(electionId: MongoId, cmd: VoteCreate, boardSign: SignedData): Future[VoteRecord]
+  def create(electionId: String, cmd: VoteCreate, boardSign: SignedData): Future[VoteRecord]
 
-  def getAllByElectionId(electionId: MongoId, offset: Int, limit: Int): Future[List[VoteRecord]]
+  def getAllByElectionId(electionId: String, offset: Int, limit: Int): Future[List[VoteRecord]]
 
-  def countByElectionId(electionId: MongoId): Future[Int]
+  def countByElectionId(electionId: String): Future[Int]
 
 }
 
 class VoteStoreImpl(db: DefaultDB)
                    (implicit ec: ExecutionContext)
-  extends BasicMongoStore[VoteRecord, MongoId](db, "votes") with VoteStore {
+  extends BasicMongoStore[VoteRecord, String](db, "votes") with VoteStore {
 
   import reactivemongo.play.json._
 
-  override def create(electionId: MongoId, cmd: VoteCreate, boardSign: SignedData) = {
-    val id = MongoId()
+  override def create(electionId: String, cmd: VoteCreate, boardSign: SignedData) = {
+    val id = UUID.randomUUID().toString
     getIndexAndHash(electionId).flatMap{ case (index, prevHash) =>
       val hash = HashService.hash(Json.stringify(Json.toJson(cmd)), Some(prevHash).filterNot(_.isEmpty))
       val timestamp = System.currentTimeMillis()
@@ -44,7 +46,7 @@ class VoteStoreImpl(db: DefaultDB)
 
   }
 
-  override def getAllByElectionId(electionId: MongoId, offset: Int, limit: Int) = {
+  override def getAllByElectionId(electionId: String, offset: Int, limit: Int) = {
     collection
       .find(Json.obj("electionId" -> electionId))
       .options(QueryOpts(skipN = offset, batchSizeN = limit))
@@ -52,12 +54,12 @@ class VoteStoreImpl(db: DefaultDB)
       .collect[List](limit, Cursor.FailOnError[List[VoteRecord]]())
   }
 
-  override def countByElectionId(electionId: MongoId) = {
+  override def countByElectionId(electionId: String) = {
     val query = Json.obj("electionId" -> electionId)
     collection.count(Some(query))
   }
 
-  def getIndexAndHash(electionId: MongoId): Future[(Long, String)] = {
+  def getIndexAndHash(electionId: String): Future[(Long, String)] = {
     collection
       .find(Json.obj("electionId" -> electionId), Json.obj("index" -> 1, "hash" -> 1))
       .sort(Json.obj("index" -> -1))

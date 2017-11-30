@@ -21,20 +21,20 @@ class ElectionResources(service: ElectionService)(implicit ec: ExecutionContext,
           onSuccess(service.create(cmd)) { v => complete(StatusCodes.Created -> v) }
         }
       }
-    } ~ objectId { mongoId =>
+    } ~ uuidPath { uuid =>
       (get & pathPrefix("exist")) {
-        onSuccess(service.exist(mongoId)) { v => complete(v) }
+        onSuccess(service.exist(uuid)) { v => complete(v) }
       } ~ (post & entity(as[ElectionProlong])) { cmd =>
-        onSuccess(service.extendDuration(mongoId, cmd)) { v => complete(v) }
+        onSuccess(service.extendDuration(uuid, cmd)) { v => complete(v) }
       } ~ pathPrefix("votes") {
         (pathPrefix("count") & get) {
-          onSuccess(service.getVotesCount(mongoId)) { v => complete(v) }
+          onSuccess(service.getVotesCount(uuid)) { v => complete(v) }
         } ~ (post & entity(as[VoteCreate])) { cmd =>
-          onSuccess(service.vote(mongoId, cmd)) { v => complete(StatusCodes.Created -> v) }
+          onSuccess(service.vote(uuid, cmd)) { v => complete(StatusCodes.Created -> v) }
         } ~ (get & parameters("offset".as[Int] ? 0, "limit".as[Int] ? 20)) { (o, l) =>
-          onSuccess(service.getVotes(mongoId, o, l)) { v => complete(v) }
+          onSuccess(service.getVotes(uuid, o, l)) { v => complete(v) }
         }
-      } ~ onSuccess(service.get(mongoId)) { v => complete(v) }
+      } ~ onSuccess(service.get(uuid)) { v => complete(v) }
     }
   }
 }

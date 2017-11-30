@@ -10,11 +10,11 @@ import scala.concurrent.{ExecutionContext, Future}
 abstract class BasicMongoStore[Model, ID](db: DefaultDB, collectionName: String)
                                          (implicit ec: ExecutionContext,
                                           mFormat: OFormat[Model],
-                                          idFormat: OFormat[ID]) {
+                                          idFormat: Format[ID]) {
 
   val collection: JSONCollection = db[JSONCollection](collectionName)
 
-  def $id[T](id: T)(implicit w: OWrites[T]): JsObject = Json.obj("_id" → Json.toJson(id))
+  def $id[T](id: T)(implicit w: Writes[T]): JsObject = Json.obj("_id" → Json.toJson(id))
 
   def getById(id: ID): Future[Model] = findById(id).flatMap {
     case Some(or) => Future.successful(or)

@@ -1,13 +1,11 @@
 package org.ergoplatform.board
 
-import org.ergoplatform.board.models.MongoId
-
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 trait FutureHelpers {
 
-  def notFound(id: MongoId) = new NoSuchElementException(s"Cannot find record with id = $id")
+  def notFound(id: String) = new NoSuchElementException(s"Cannot find record with id = $id")
 
   implicit class TurnIntoFuture[A](a: A) {
     def asFut: Future[A] = Future.successful(a)

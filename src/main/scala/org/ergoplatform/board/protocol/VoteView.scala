@@ -1,9 +1,9 @@
 package org.ergoplatform.board.protocol
 
-import org.ergoplatform.board.models.{MongoId, SignedData, VoteRecord}
+import org.ergoplatform.board.models.{SignedData, VoteRecord}
 import play.api.libs.json.Json
 
-case class VoteView(electionId: MongoId,
+case class VoteView(electionId: String,
                     groupId: String,
                     sectionId: String,
                     index: Long,
@@ -17,7 +17,7 @@ object VoteView {
   implicit val fmt = Json.format[VoteView]
 
   def fromRecord(vr: VoteRecord): VoteView = VoteView(
-    electionId = vr.electionId,
+    electionId = vr.electionId.toString,
     groupId = vr.groupId,
     sectionId = vr.sectionId,
     index = vr.index,

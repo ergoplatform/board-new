@@ -9,7 +9,7 @@ object ElectionView {
   implicit val fmt = Json.format[ElectionView]
 
   def fromRecord(e: ElectionRecord): ElectionView = ElectionView(
-    id = e.id.id,
+    id = e._id.toString,
     start = e.start,
     end =  e.end,
     publicKey = e.keys.publicKey,
