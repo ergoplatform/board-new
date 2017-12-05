@@ -3,17 +3,26 @@ package org.ergoplatform.board.handlers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import de.flapdoodle.embed.mongo.MongodExecutable
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import org.ergoplatform.board.FutureHelpers
 import org.ergoplatform.board.models.SignedData
+import org.ergoplatform.board.mongo.{EmbeddedMongoInstance, MongoClient}
 import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.services.{ElectionServiceImpl, HashService, SignService}
-import org.ergoplatform.board.{FutureHelpers, InMemoryElectionStore, InMemoryVoteStore}
-import org.scalatest.{FlatSpec, Matchers}
+import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import play.api.libs.json.{JsObject, Json}
+import reactivemongo.api.{DefaultDB, MongoConnection}
+import reactivemongo.play.json._
+import reactivemongo.play.json.collection._
 
 class ElectionResourcesSpec extends FlatSpec
+  with BeforeAndAfterAll
   with Matchers
   with ScalatestRouteTest
+  with EmbeddedMongoInstance
+  with MongoClient
   with PlayJsonSupport
   with FutureHelpers {
 
@@ -29,11 +38,30 @@ class ElectionResourcesSpec extends FlatSpec
 
   implicit val timeout = RouteTestTimeout(10.seconds dilated)
 
-  val eStore = new InMemoryElectionStore
-  val vStore = new InMemoryVoteStore
-  val service = new ElectionServiceImpl(eStore, vStore)
-  val handler = new ElectionResources(service)
-  val route  = Route.seal(handler.routes)
+  val driver = new reactivemongo.api.MongoDriver
+  var mEx: MongodExecutable = _
+  var connection: MongoConnection = _
+  var db: DefaultDB = _
+
+  override def beforeAll(): Unit = {
+    mEx = mongoEx()
+    mEx.start()
+    connection = getConnection(driver)
+    db = getDb(connection)
+  }
+
+  override def afterAll(): Unit = {
+    connection.close()
+    driver.close(2 seconds)
+    mEx.stop()
+  }
+
+  lazy val eStore = new ElectionStoreImpl(db)
+  lazy val vStore = new VoteStoreImpl(db)
+  lazy val service = new ElectionServiceImpl(eStore, vStore)
+  lazy val handler = new ElectionResources(service)
+  lazy val route  = Route.seal(handler.routes)
+
 
 
   it should "create election correctly" in {
@@ -81,7 +109,7 @@ class ElectionResourcesSpec extends FlatSpec
       (data \ "result").as[Boolean] shouldBe true
     }
 
-    eStore.data.remove(election.id)
+    db[JSONCollection]("elections").remove(Json.obj("_id" -> election.id)).await
 
     Get(s"/elections/${election.id}") ~> route ~> check {
       status shouldBe StatusCodes.NotFound
@@ -101,16 +129,18 @@ class ElectionResourcesSpec extends FlatSpec
   it should "work correctly with basic flow" in {
     val cmd = ElectionCreate(100L, 200L, Some("test"))
 
+    var election: ElectionView = ElectionView("", 0L, 0L, "", None)
+
     Post("/elections", cmd) ~> route ~> check {
       status shouldBe StatusCodes.Created
       val data = entityAs[ElectionView]
+      election = data
       data.start shouldEqual 100L
       data.end shouldEqual 200L
       data.description shouldBe Some("test")
     }
 
-    val election = eStore.data.head._2
-    val electionId = election._id
+    val electionId = election.id
 
     val keys1 = SignService.generateRandomKeyPair()
     val keys2 = SignService.generateRandomKeyPair()

@@ -25,3 +25,5 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % Test,
   "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0" % Test
 )
+
+parallelExecution in Test := false

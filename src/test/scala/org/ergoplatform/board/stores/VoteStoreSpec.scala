@@ -42,7 +42,7 @@ class VoteStoreSpec extends MongoFixture with Matchers with FutureHelpers {
   val cmd3 = generateRec
   val cmds = List(cmd1, cmd2, cmd3)
 
-  it should "create and find correclty" in { db =>
+  it should "create and find correctly" in { db =>
     val store = new VoteStoreImpl(db)
 
     val boardSign1 = signByBoard(cmd1)

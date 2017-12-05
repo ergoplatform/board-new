@@ -13,7 +13,6 @@ import scala.util.Random
 
 class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers {
 
-
   def generateRec: ElectionRecord = {
     val id = UUID.randomUUID().toString
     val start = Random.nextInt(Int.MaxValue)
@@ -28,7 +27,7 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers {
   val rec3 = generateRec
   val recs = List(rec1, rec2, rec3)
 
-  it should "check existence correclty" in  { db =>
+  it should "check existence correctly" in  { db =>
     val store = new ElectionStoreImpl(db)
     recs.forall{rec => !store.exist(rec._id).await} shouldBe true
     recs.foreach( rec => store.create(rec).await)
@@ -48,7 +47,7 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers {
     the[NoSuchElementException] thrownBy store.get(UUID.randomUUID().toString).await
   }
 
-  it should "extend duration correclty" in {db =>
+  it should "extend duration correctly" in {db =>
     val store = new ElectionStoreImpl(db)
     val extendFor = 200L
 
