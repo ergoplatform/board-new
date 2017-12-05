@@ -22,5 +22,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test,
-  "org.scalatest" %% "scalatest" % "3.0.4" % Test
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test,
+  "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0" % Test
 )

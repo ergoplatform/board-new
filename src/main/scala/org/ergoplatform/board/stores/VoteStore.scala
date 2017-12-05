@@ -26,6 +26,7 @@ class VoteStoreImpl(db: DefaultDB)
 
   import reactivemongo.play.json._
 
+  //TODO: remove all kind of side logic. store should only save prepared data without preparing it.
   override def create(electionId: String, cmd: VoteCreate, boardSign: SignedData) = {
     val id = UUID.randomUUID().toString
     getIndexAndHash(electionId).flatMap{ case (index, prevHash) =>
