@@ -1,14 +1,17 @@
 package org.ergoplatform.board
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.ergoplatform.board.handlers.ElectionResources
+import org.ergoplatform.board.models.{SignedData, VoteRecord}
+import org.ergoplatform.board.persistence.HashChainVoteProcessor
+import org.ergoplatform.board.protocol.VoteCreate
 import org.ergoplatform.board.services.ElectionServiceImpl
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
-import reactivemongo.api.{DefaultDB, MongoConnection}
+import reactivemongo.api.{DefaultDB, Driver, MongoConnection, MongoDriver}
 
 import scala.concurrent.Future
 import scala.io.StdIn
@@ -22,6 +25,20 @@ object App extends Mongo {
   val config = ConfigFactory.load()
 
   def main(args: Array[String]) {
+
+//    val persistentActor = system.actorOf(HashChainVoteProcessor.props("test"))
+//
+//    val cmd1 = VoteCreate("group1", "section1", "some message1", SignedData.empty)
+//    val cmd2 = VoteCreate("group1", "section1", "some message2", SignedData.empty)
+//
+//    persistentActor ! "print"
+////    persistentActor ! cmd1
+////    persistentActor ! "print"
+////    persistentActor ! cmd2
+////    persistentActor ! "print"
+//
+//    Thread.sleep(1000)
+//    system.terminate()
     implicit def eh: ExceptionHandler = ApiErrorHandler.exceptionHandler
 
     val host = Try(config.getString("http.host")).getOrElse("localhost")
