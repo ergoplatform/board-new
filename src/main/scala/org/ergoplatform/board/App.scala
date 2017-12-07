@@ -2,10 +2,11 @@ package org.ergoplatform.board
 
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import org.ergoplatform.board.handlers.ElectionResources
+import org.ergoplatform.board.handlers.{ElectionResources, SwaggerSupport}
 import org.ergoplatform.board.models.{SignedData, VoteRecord}
 import org.ergoplatform.board.persistence.HashChainVoteProcessor
 import org.ergoplatform.board.protocol.VoteCreate
@@ -26,19 +27,6 @@ object App extends Mongo {
 
   def main(args: Array[String]) {
 
-//    val persistentActor = system.actorOf(HashChainVoteProcessor.props("test"))
-//
-//    val cmd1 = VoteCreate("group1", "section1", "some message1", SignedData.empty)
-//    val cmd2 = VoteCreate("group1", "section1", "some message2", SignedData.empty)
-//
-//    persistentActor ! "print"
-////    persistentActor ! cmd1
-////    persistentActor ! "print"
-////    persistentActor ! cmd2
-////    persistentActor ! "print"
-//
-//    Thread.sleep(1000)
-//    system.terminate()
     implicit def eh: ExceptionHandler = ApiErrorHandler.exceptionHandler
 
     val host = Try(config.getString("http.host")).getOrElse("localhost")
@@ -65,7 +53,7 @@ object App extends Mongo {
       val eStore = new ElectionStoreImpl(db)
       val vStore = new VoteStoreImpl(db)
       new ElectionServiceImpl(eStore, vStore)
-    }.map {service => new ElectionResources(service).routes}
+    }.map {service => new ElectionResources(service).routes ~ new SwaggerSupport().assets ~ SwaggerDocService.routes }
     electionRoute
   }
 }
