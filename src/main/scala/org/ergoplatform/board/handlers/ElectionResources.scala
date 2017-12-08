@@ -45,19 +45,48 @@ class ElectionResources(service: ElectionService, timeout: Timeout = Timeout(3 s
     onSuccess(service.create(cmd)) { v => complete(Created -> v) }
   }
 
-  @Path("/{electionId}")
-  @ApiOperation(httpMethod = "GET", code = 201, response = classOf[Election], value = "Gets election model by Id")
+  @Path("{id}")
+  @ApiOperation(httpMethod = "GET", code = 200, response = classOf[Election], value = "Gets election model by Id")
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "id",
+        value = "UUID",
+        dataType = "string",
+        paramType = "path",
+        required = true)
+    )
+  )
+  @ApiResponses(Array(
+    new ApiResponse(code = 404, message = "Not Found", response = classOf[ApiErrorResponse])
+  ))
   def getElection = (get & uuidPath) { uuid => onSuccess(service.get(uuid)) { v => complete(v) } }
 
 
-  @Path("/{electionId}/exist")
+  @Path("/{id}/exist")
   @ApiOperation(httpMethod = "GET", code = 200, response = classOf[BooleanResultResponse], value = "Checks if election with this id is exists")
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "id",
+        value = "UUID",
+        dataType = "string",
+        paramType = "path",
+        required = true)
+    )
+  )
   def existElection = (get & uuidPath & pathPrefix("exist")) { uuid => onSuccess(service.exist(uuid)) { v => complete(v.toResponse) } }
 
-  @Path("/{electionId}")
+  @Path("/{id}")
   @ApiOperation(httpMethod = "PUT", code = 200, response = classOf[Election], value = "Prolongs election duration for provided number of milliseconds")
   @ApiImplicitParams(
     Array(
+      new ApiImplicitParam(
+        name = "id",
+        value = "UUID",
+        dataType = "string",
+        paramType = "path",
+        required = true),
       new ApiImplicitParam(
         name = "ElectionProlong",
         value = "ElectionProlong Сommand",
@@ -65,6 +94,9 @@ class ElectionResources(service: ElectionService, timeout: Timeout = Timeout(3 s
         paramType = "body")
     )
   )
+  @ApiResponses(Array(
+    new ApiResponse(code = 404, message = "Not Found", response = classOf[ApiErrorResponse])
+  ))
   def extendElection = (put & uuidPath & entity(as[ElectionProlong])) { (uuid, cmd) =>
     onSuccess(service.extendDuration(uuid, cmd)) { v => complete(v) }
   }
