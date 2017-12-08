@@ -6,6 +6,9 @@ import akka.stream.ActorMaterializer
 
 import scala.concurrent.ExecutionContext
 
+/**
+  * This class is only serving static swagger-ui
+  */
 class SwaggerSupport(implicit ec: ExecutionContext, mat: ActorMaterializer) {
 
   def assets = pathPrefix("swagger") {
