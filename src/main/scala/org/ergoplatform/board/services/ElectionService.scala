@@ -11,15 +11,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait ElectionService {
 
-  def create(cmd: ElectionCreate): Future[ElectionView]
+  def create(cmd: ElectionCreate): Future[Election]
 
-  def find(id: String): Future[Option[ElectionView]]
+  def find(id: String): Future[Option[Election]]
 
-  def get(id: String): Future[ElectionView]
+  def get(id: String): Future[Election]
 
   def exist(id: String): Future[Boolean]
 
-  def extendDuration(id: String, extendFor: ElectionProlong): Future[ElectionView]
+  def extendDuration(id: String, extendFor: ElectionProlong): Future[Election]
 
   def vote(electionId: String, cmd: VoteCreate): Future[VoteView]
 
@@ -32,22 +32,23 @@ trait ElectionService {
 class ElectionServiceImpl(eStore: ElectionStore, vStore: VoteStore)
                          (implicit ec: ExecutionContext) extends ElectionService {
 
-  def create(cmd: ElectionCreate): Future[ElectionView] = {
+  def create(cmd: ElectionCreate): Future[Election] = {
     val id = UUID.randomUUID().toString
     val keys = SignService.generateRandomKeyPair()
     val election = ElectionRecord(id, cmd.start, cmd.end, keys, cmd.description)
-    eStore.create(election).map(_ => ElectionView.fromRecord(election))
+    eStore.create(election).map(_ => Election.fromRecord(election))
   }
 
-  def find(id: String): Future[Option[ElectionView]] = eStore.find(id).map(_.map(ElectionView.fromRecord))
+  def find(id: String): Future[Option[Election]] = eStore.find(id).map(_.map(Election.fromRecord))
 
-  def get(id: String): Future[ElectionView] = eStore.get(id).map(ElectionView.fromRecord)
+  def get(id: String): Future[Election] = eStore.get(id).map(Election.fromRecord)
 
   def exist(id: String): Future[Boolean] = eStore.exist(id)
 
-  def extendDuration(id: String, extendFor: ElectionProlong): Future[ElectionView] = eStore
+  def extendDuration(id: String, extendFor: ElectionProlong): Future[Election] = eStore
     .extend(id, extendFor.prolongDuration)
-    .map(ElectionView.fromRecord)
+    .map(Election.fromRecord)
+
 
   def vote(electionId: String, cmd: VoteCreate): Future[VoteView] = for {
     _ <- SignService.validateFuture(cmd.signature, cmd.m)

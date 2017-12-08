@@ -8,9 +8,9 @@ import akka.util.Timeout
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.swagger.annotations._
 import org.ergoplatform.board.directives.CommonDirectives
-import org.ergoplatform.board.protocol.{ElectionCreate, ElectionProlong}
+import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.services.ElectionService
-import org.ergoplatform.board.utils.CommonCodecs
+import org.ergoplatform.board.utils.RichBoolean
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -21,21 +21,50 @@ class ElectionResources(service: ElectionService, timeout: Timeout = Timeout(3 s
                        (implicit ec: ExecutionContext, mat: ActorMaterializer)
   extends PlayJsonSupport
   with CommonDirectives
-  with CommonCodecs {
+  with RichBoolean {
 
   import akka.http.scaladsl.model.StatusCodes._
 
   val routes = pathPrefix("elections") { createElection ~ existElection ~ extendElection ~ getElection }
 
-  @ApiOperation(httpMethod = "POST", value = "Creates election")
+  @ApiOperation(httpMethod = "POST", code = 201, response = classOf[Election], value = "Creates election")
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "ElectionCreate",
+        value = "ElectionCreate Сommand",
+        dataType = "org.ergoplatform.board.protocol.ElectionCreate",
+        paramType = "body")
+    )
+  )
+  @ApiResponses(Array(
+    new ApiResponse(code = 201, message = "Return created election model", response = classOf[Election]),
+    new ApiResponse(code = 500, message = "Internal server error")
+  ))
   def createElection = (post & entity(as[ElectionCreate])) { cmd =>
     onSuccess(service.create(cmd)) { v => complete(Created -> v) }
   }
 
+  @Path("/{electionId}")
+  @ApiOperation(httpMethod = "GET", code = 201, response = classOf[Election], value = "Gets election model by Id")
   def getElection = (get & uuidPath) { uuid => onSuccess(service.get(uuid)) { v => complete(v) } }
 
-  def existElection = (get & uuidPath & pathPrefix("exist")) { uuid => onSuccess(service.exist(uuid)) { v => complete(v) } }
 
+  @Path("/{electionId}/exist")
+  @ApiOperation(httpMethod = "GET", code = 200, response = classOf[BooleanResultResponse], value = "Checks if election with this id is exists")
+  def existElection = (get & uuidPath & pathPrefix("exist")) { uuid => onSuccess(service.exist(uuid)) { v => complete(v.toResponse) } }
+
+  @Path("/{electionId}")
+  @ApiOperation(httpMethod = "PUT", code = 200, response = classOf[Election], value = "Prolongs election duration for provided number of milliseconds")
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "ElectionProlong",
+        value = "ElectionProlong Сommand",
+        dataType = "org.ergoplatform.board.protocol.ElectionProlong",
+        paramType = "body")
+    )
+  )
   def extendElection = (put & uuidPath & entity(as[ElectionProlong])) { (uuid, cmd) =>
     onSuccess(service.extendDuration(uuid, cmd)) { v => complete(v) }
   }

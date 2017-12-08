@@ -27,7 +27,7 @@ class ElectionResourcesSpec extends FlatSpec
   with FutureHelpers {
 
   import ElectionCreate._
-  import ElectionView._
+  import Election._
   import VoteCreate._
   import VoteView._
   import akka.http.scaladsl.testkit.RouteTestTimeout
@@ -69,7 +69,7 @@ class ElectionResourcesSpec extends FlatSpec
 
     Post("/elections",cmd)  ~> route ~> check {
       status shouldBe StatusCodes.Created
-      val data = entityAs[ElectionView]
+      val data = entityAs[Election]
       data.start shouldEqual 100L
       data.end shouldEqual 200L
       data.description shouldBe Some("test")
@@ -87,7 +87,7 @@ class ElectionResourcesSpec extends FlatSpec
 
     Get(s"/elections/${election.id}") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val data = entityAs[ElectionView]
+      val data = entityAs[Election]
       data.start shouldEqual election.start
       data.end shouldEqual election.end
       data.description shouldBe election.description
@@ -99,7 +99,7 @@ class ElectionResourcesSpec extends FlatSpec
 
     Put(s"/elections/${election.id}", ElectionProlong(prolongValue)) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val data = entityAs[ElectionView]
+      val data = entityAs[Election]
       data.end shouldEqual election.end + prolongValue
     }
 
@@ -129,11 +129,11 @@ class ElectionResourcesSpec extends FlatSpec
   ignore should "work correctly with basic flow" in {
     val cmd = ElectionCreate(100L, 200L, Some("test"))
 
-    var election: ElectionView = ElectionView("", 0L, 0L, "", None)
+    var election: Election = Election("", 0L, 0L, "", None)
 
     Post("/elections", cmd) ~> route ~> check {
       status shouldBe StatusCodes.Created
-      val data = entityAs[ElectionView]
+      val data = entityAs[Election]
       election = data
       data.start shouldEqual 100L
       data.end shouldEqual 200L
