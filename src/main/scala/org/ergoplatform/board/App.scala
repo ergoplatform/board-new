@@ -2,48 +2,32 @@ package org.ergoplatform.board
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ExceptionHandler, Route}
+import akka.http.scaladsl.server.ExceptionHandler
 import akka.stream.ActorMaterializer
-import com.typesafe.config.ConfigFactory
-import org.ergoplatform.board.handlers.{ElectionResources, SwaggerSupport}
-import org.ergoplatform.board.services.ElectionServiceImpl
-import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
-import reactivemongo.api.DefaultDB
 
-import scala.io.StdIn
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.util.Try
 
-object App extends Mongo {
+object App extends Setup with Mongo with Services with Rest {
 
-  implicit val system = ActorSystem("board-system")
-  implicit val materializer = ActorMaterializer()
-  implicit val executionContext = system.dispatcher
-  val config = ConfigFactory.load()
+  override implicit val system = ActorSystem("board-system")
+  override implicit val mat = ActorMaterializer()
+  override implicit val ec = system.dispatcher
 
   def main(args: Array[String]) {
+    sys.addShutdownHook{
+      Await.result(connectionToMongo.actorSystem.terminate(), 2 seconds)
+      Await.result(system.terminate(), 2 seconds)
+    }
 
     implicit def eh: ExceptionHandler = ApiErrorHandler.exceptionHandler
-
     val host = Try(config.getString("http.host")).getOrElse("localhost")
     val port = Try(config.getInt("http.port")).getOrElse(8080)
 
-    val routes = initRoutes(db)
-    val bindingFuture = Http().bindAndHandle(routes, host, port)
-
-    println(s"Server online at http://$host:$port/\nPress RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
-    bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete{_ => terminateMongo; system.terminate()} // and shutdown when done
-
-  }
-
-  def initRoutes(db: DefaultDB): Route = {
-    val eStore = new ElectionStoreImpl(db)
-    val vStore = new VoteStoreImpl(db)
-    val service = new ElectionServiceImpl(eStore, vStore)
-    val routes = new ElectionResources(service).routes ~ new SwaggerSupport().assets ~ SwaggerDocService.routes
-    routes
+    Http()
+      .bindAndHandle(routes, host, port)
+      .map { binding => logger.info(s"HTTP server started at ${binding.localAddress}") }
+      .recover { case ex => logger.error("Could not start HTTP server", ex) }
   }
 }
