@@ -1,4 +1,4 @@
-package org.ergoplatform.board
+package org.ergoplatform.board.services
 
 import com.github.swagger.akka.SwaggerHttpService
 import com.github.swagger.akka.model.Info
