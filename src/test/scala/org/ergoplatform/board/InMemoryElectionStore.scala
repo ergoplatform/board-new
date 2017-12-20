@@ -19,7 +19,7 @@ class InMemoryElectionStore extends ElectionStore with FutureHelpers {
 
   def get(id: String): Future[ElectionRecord] = data(id).asFut
 
-  def exist(id: String): Future[Boolean] = data.exists(_._1 == id).asFut
+  def exists(id: String): Future[Boolean] = data.exists(_._1 == id).asFut
 
   def extend(id: String, extendFor: Long): Future[ElectionRecord] = {
     data.get(id).map(e => e.copy(end = e.end + extendFor)).foreach { e =>

@@ -75,7 +75,7 @@ class ElectionResources(service: ElectionService, timeout: Timeout = Timeout(3 s
         required = true)
     )
   )
-  def existElection = (get & uuidPath & pathPrefix("exist")) { uuid => onSuccess(service.exist(uuid)) { v => complete(v.toResponse) } }
+  def existElection = (get & uuidPath & pathPrefix("exist")) { uuid => onSuccess(service.exists(uuid)) { v => complete(v.toResponse) } }
 
   @Path("/{id}")
   @ApiOperation(httpMethod = "PUT", code = 200, response = classOf[Election], value = "Prolongs election duration for provided number of milliseconds")

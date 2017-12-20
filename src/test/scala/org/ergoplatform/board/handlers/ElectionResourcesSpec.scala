@@ -3,17 +3,15 @@ package org.ergoplatform.board.handlers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import de.flapdoodle.embed.mongo.MongodExecutable
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import org.ergoplatform.board.FutureHelpers
 import org.ergoplatform.board.models.SignedData
-import org.ergoplatform.board.mongo.{EmbeddedMongoInstance, MongoClient}
+import org.ergoplatform.board.mongo.MongoPerSpec
 import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.services.{ElectionServiceImpl, HashService, SignService}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import play.api.libs.json.{JsObject, Json}
-import reactivemongo.api.{DefaultDB, MongoConnection}
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection._
 
@@ -21,13 +19,12 @@ class ElectionResourcesSpec extends FlatSpec
   with BeforeAndAfterAll
   with Matchers
   with ScalatestRouteTest
-  with EmbeddedMongoInstance
-  with MongoClient
   with PlayJsonSupport
-  with FutureHelpers {
+  with FutureHelpers
+  with MongoPerSpec {
 
-  import ElectionCreate._
   import Election._
+  import ElectionCreate._
   import VoteCreate._
   import VoteView._
   import akka.http.scaladsl.testkit.RouteTestTimeout
@@ -38,27 +35,9 @@ class ElectionResourcesSpec extends FlatSpec
 
   implicit val timeout = RouteTestTimeout(10.seconds dilated)
 
-  val driver = new reactivemongo.api.MongoDriver
-  var mEx: MongodExecutable = _
-  var connection: MongoConnection = _
-  var db: DefaultDB = _
-
-  override def beforeAll(): Unit = {
-    mEx = mongoEx()
-    mEx.start()
-    connection = getConnection(driver)
-    db = getDb(connection)
-  }
-
-  override def afterAll(): Unit = {
-    connection.close()
-    driver.close(2 seconds)
-    mEx.stop()
-  }
-
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val vStore = new VoteStoreImpl(db)
-  lazy val service = new ElectionServiceImpl(eStore, vStore)
+  lazy val service = new ElectionServiceImpl(eStore)
   lazy val handler = new ElectionResources(service)
   lazy val route  = Route.seal(handler.routes)
 
