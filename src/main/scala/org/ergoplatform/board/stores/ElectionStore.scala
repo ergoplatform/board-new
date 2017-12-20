@@ -14,7 +14,7 @@ trait ElectionStore {
 
   def get(id: String): Future[ElectionRecord]
 
-  def exist(id: String): Future[Boolean]
+  def exists(id: String): Future[Boolean]
 
   def extend(mongoId: String, extendFor: Long): Future[ElectionRecord]
 
@@ -36,5 +36,5 @@ class ElectionStoreImpl(db: DefaultDB)
 
   override def create(rec: ElectionRecord) = insert(rec)
 
-  override def exist(id: String) = find(id).map(_.nonEmpty)
+  override def exists(id: String) = find(id).map(_.nonEmpty)
 }

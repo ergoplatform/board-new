@@ -1,37 +1,23 @@
 package org.ergoplatform.board.stores
 
-import java.util.UUID
-
-import org.ergoplatform.board.FutureHelpers
-import org.ergoplatform.board.models.ElectionRecord
 import org.ergoplatform.board.mongo.MongoFixture
-import org.ergoplatform.board.services.SignService
+import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.scalatest.Matchers
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Random
 
-class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers {
+class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers with Generators {
 
-  def generateRec: ElectionRecord = {
-    val id = UUID.randomUUID().toString
-    val start = Random.nextInt(Int.MaxValue)
-    val end = start + Random.nextInt(Int.MaxValue)
-    val keys = SignService.generateRandomKeyPair()
-    val desc = Some(Random.alphanumeric.take(20).toString())
-    ElectionRecord(id, start, end, keys, desc)
-  }
-
-  val rec1 = generateRec
-  val rec2 = generateRec
-  val rec3 = generateRec
+  val rec1 = rndElection()
+  val rec2 = rndElection()
+  val rec3 = rndElection()
   val recs = List(rec1, rec2, rec3)
 
   it should "check existence correctly" in  { db =>
     val store = new ElectionStoreImpl(db)
-    recs.forall{rec => !store.exist(rec._id).await} shouldBe true
+    recs.forall{rec => !store.exists(rec._id).await} shouldBe true
     recs.foreach( rec => store.create(rec).await)
-    recs.forall{rec => store.exist(rec._id).await} shouldBe true
+    recs.forall{rec => store.exists(rec._id).await} shouldBe true
   }
 
   it should "find and get correctly" in { db =>
@@ -44,7 +30,11 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers {
     val found2 = store.get(rec2._id).await
     found2 shouldBe rec2
 
-    the[NoSuchElementException] thrownBy store.get(UUID.randomUUID().toString).await
+
+    the[NoSuchElementException] thrownBy store.get(uuid).await
+    //check that message has entity name in it in case of not found error
+    val ex =  intercept[NoSuchElementException] { store.get(uuid).await }
+    ex.getMessage should include (rec1.getClass.getSimpleName)
   }
 
   it should "extend duration correctly" in {db =>

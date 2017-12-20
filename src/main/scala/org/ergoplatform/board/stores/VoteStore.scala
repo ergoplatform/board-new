@@ -48,16 +48,13 @@ class VoteStoreImpl(db: DefaultDB)
   }
 
   override def getAllByElectionId(electionId: String, offset: Int, limit: Int) = {
-    collection
-      .find(Json.obj("electionId" -> electionId))
-      .options(QueryOpts(skipN = offset, batchSizeN = limit))
-      .cursor[VoteRecord]()
-      .collect[List](limit, Cursor.FailOnError[List[VoteRecord]]())
+    val query = Json.obj("electionId" -> electionId)
+    findByQuery(query = query, offset = offset, limit = limit)
   }
 
   override def countByElectionId(electionId: String) = {
     val query = Json.obj("electionId" -> electionId)
-    collection.count(Some(query))
+    countByQuery(query)
   }
 
   def getIndexAndHash(electionId: String): Future[(Long, String)] = {
