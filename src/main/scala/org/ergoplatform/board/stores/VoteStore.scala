@@ -6,18 +6,23 @@ import org.ergoplatform.board.models.{SignedData, VoteRecord}
 import org.ergoplatform.board.protocol.VoteCreate
 import org.ergoplatform.board.services.HashService
 import play.api.libs.json.{JsValue, Json}
-import reactivemongo.api.{Cursor, DefaultDB, QueryOpts}
+import reactivemongo.api.{Cursor, DefaultDB}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 trait VoteStore {
 
+  def get(id: String): Future[VoteRecord]
+
   def create(electionId: String, cmd: VoteCreate, boardSign: SignedData): Future[VoteRecord]
+
+  def save(rec: VoteRecord): Future[VoteRecord]
 
   def getAllByElectionId(electionId: String, offset: Int, limit: Int): Future[List[VoteRecord]]
 
   def countByElectionId(electionId: String): Future[Int]
 
+//  def updateAll(list: List[VoteRecord]): Future[List[VoteRecord]]
 }
 
 class VoteStoreImpl(db: DefaultDB)
@@ -34,8 +39,6 @@ class VoteStoreImpl(db: DefaultDB)
       val timestamp = System.currentTimeMillis()
       val vote = VoteRecord(id,
         electionId,
-        cmd.groupId,
-        cmd.sectionId,
         index + 1,
         hash,
         cmd.m,
@@ -72,4 +75,24 @@ class VoteStoreImpl(db: DefaultDB)
         }.getOrElse((0L, ""))
       }
   }
+//TODO: WAIT TO FIX ERGO-54
+//  def updateAll(list: List[VoteRecord]): Future[List[VoteRecord]] = {
+//    import scala.concurrent.duration._
+//
+//    val update = collection.update(false)
+//    val elements = Await.result(Future.sequence(list.map { vr =>
+//      update.element(
+//        q = Json.obj("_id" -> vr._id),
+//        u = vr,
+//        upsert = true,
+//        multi = false
+//      )
+//    }), 2 seconds)
+//
+//    update.many(elements).map(_ => list)
+//  }
+
+  def get(id: String): Future[VoteRecord] = getById(id)
+
+  def save(rec: VoteRecord): Future[VoteRecord] = insert(rec)
 }

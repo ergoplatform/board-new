@@ -25,7 +25,7 @@ class VoterServiceSpec extends MongoFixture with Matchers with FutureHelpers wit
     ex.getMessage should include("Can't find election")
 
     val election = rndElection(electionId)
-    eStore.create(election).await
+    eStore.save(election).await
 
     val created = service.register(cmd).await
 

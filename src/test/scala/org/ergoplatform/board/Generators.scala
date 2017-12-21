@@ -11,7 +11,7 @@ trait Generators {
 
   def rndElection(electionId: String = uuid): ElectionRecord = {
     val id = electionId
-    val start = Random.nextInt(Int.MaxValue)
+    val start = System.currentTimeMillis()
     val end = start + Random.nextInt(Int.MaxValue)
     val keys = SignService.generateRandomKeyPair()
     val desc = Some(Random.alphanumeric.take(20).toString())

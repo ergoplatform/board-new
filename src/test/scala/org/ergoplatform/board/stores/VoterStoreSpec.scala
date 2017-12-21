@@ -24,9 +24,9 @@ class VoterStoreSpec extends MongoFixture with Matchers with FutureHelpers with 
 
     the[NoSuchElementException] thrownBy store.get(rec1._id).await
 
-    val saved1 = store.create(rec1).await
-    val saved2 = store.create(rec2).await
-    val saved3 = store.create(rec3).await
+    val saved1 = store.save(rec1).await
+    val saved2 = store.save(rec2).await
+    val saved3 = store.save(rec3).await
 
     store.get(rec1._id).await shouldBe saved1
 
@@ -42,9 +42,9 @@ class VoterStoreSpec extends MongoFixture with Matchers with FutureHelpers with 
 
     recs.forall(r => !store.exists(r.publicKey).await)
 
-    store.create(rec1).await
-    store.create(rec2).await
-    store.create(rec3).await
+    store.save(rec1).await
+    store.save(rec2).await
+    store.save(rec3).await
 
     recs.forall(r => store.findByKey(r.publicKey).await.nonEmpty)
 

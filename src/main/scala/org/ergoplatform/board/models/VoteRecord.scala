@@ -4,8 +4,6 @@ import play.api.libs.json.Json
 
 case class VoteRecord(_id: String,
                       electionId: String,
-                      groupId: String,
-                      sectionId: String,
                       index: Long,
                       hash: String,
                       m: String,

@@ -134,10 +134,10 @@ class ElectionResourcesSpec extends FlatSpec
     val m2Signed = SignService.sign(m2, keys2)
 
     val broken = SignedData(keys2.publicKey, m1Signed.sign)
-    val fraudCmd = VoteCreate(gId, sId, m1, broken)
+    val fraudCmd = VoteCreate(electionId, m1, broken)
 
-    val cmd1 = VoteCreate(gId, sId, m1, m1Signed)
-    val cmd2 = VoteCreate(gId, sId, m2, m2Signed)
+    val cmd1 = VoteCreate(electionId, m1, m1Signed)
+    val cmd2 = VoteCreate(electionId, m2, m2Signed)
 
     Post(s"/elections/$electionId/votes", cmd1) ~> route ~> check {
       status shouldBe StatusCodes.Created

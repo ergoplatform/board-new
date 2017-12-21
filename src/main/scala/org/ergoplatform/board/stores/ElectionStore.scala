@@ -8,7 +8,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait ElectionStore {
 
-  def create(rec: ElectionRecord): Future[ElectionRecord]
+  def save(rec: ElectionRecord): Future[ElectionRecord]
 
   def find(id: String): Future[Option[ElectionRecord]]
 
@@ -34,7 +34,7 @@ class ElectionStoreImpl(db: DefaultDB)
     updateById(id, Json.obj("$set" -> Json.obj("end" -> newEnd)))
   }
 
-  override def create(rec: ElectionRecord) = insert(rec)
+  override def save(rec: ElectionRecord) = insert(rec)
 
   override def exists(id: String) = find(id).map(_.nonEmpty)
 }
