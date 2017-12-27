@@ -35,7 +35,7 @@
 \fi
 
 \newcommand{\knote}[1]{{\authnote{\textcolor{green}{Alex notes}}{#1}}}
-\newcommand{\dnote}[1]{{\authnote{\textcolor{red}{Dmitry notes}}{#1}}}
+\newcommand{\dnote}[1]{{\authnote{\textcolor{red}{Nazim notes}}{#1}}}
 
 
 % type user-defined commands here
@@ -100,29 +100,19 @@
 \newcommand{\dlog}{dlog(h)}
 \newcommand{\pedersen}{pcom(h, c)}
 \newcommand{\height}{\mathcal{H}}
-\newcommand{\ergo}{$\Sigma$RGO}
 
-\newcommand{\ecash}{$\Sigma$-Cash}
-
-\newcommand{\edata}{$\Sigma$-Data}
-
-\newcommand{\state}{\textit{State}}
-\newcommand{\roller}{\textbf{Rollerchain}}
-\newcommand{\aspen}{\textbf{Aspen}}
-\newcommand{\bitcoinng}{\textbf{Bitcoin-ng}}
-\newcommand{\sse}{\textbf{Space-Scarce Economy}}
-\newcommand{\popow}{\textbf{PoPoW}}
-\newcommand{\ads}{\textbf{ADS}}
-\newcommand{\ssal}{\textbf{$\Sigma$SAL}}
 
 
 \begin{document}
 
-\title{PBB}
-\author{}
+\title{Public Bulletin Board Specification}
+\author{Alexander Chepurnoy, Nazim Faour}
 \maketitle
 
+\abstract{In this paper we report on design and implementation of a public bulletin board. The board is a storage component for many cryptographic protocols, such as elections or auctions, where participants have need for append-log functionality, that is, every authorized party can append to the log of the records, every party can read any record, but nobody, including log maintainer can remove any historical record.}
+
 \section{Introduction}
+
 
 \bibliographystyle{elsarticle-num}
 \bibliography{sources.bib}
