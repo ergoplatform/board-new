@@ -8,3 +8,15 @@ target
 /project/target
 /.settings
 /.project
+
+# LaTEX garbage
+
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+
+# main.pdf for now is out of version control
+
+main.pdf
