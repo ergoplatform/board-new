@@ -1,6 +1,6 @@
 package org.ergoplatform.board
 
-import org.ergoplatform.board.services.{ElectionServiceImpl, VoterServiceImpl}
+import org.ergoplatform.board.services.{ElectionServiceImpl, VoteServiceImpl, VoterServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 
 trait Services { self: Mongo with Setup =>
@@ -10,4 +10,6 @@ trait Services { self: Mongo with Setup =>
 
   lazy val electionService = new ElectionServiceImpl(electionStore)
   lazy val voterService = new VoterServiceImpl(electionStore, voterStore)
+  lazy val voteService = new VoteServiceImpl(electionStore, voteStore, voterStore)
+
 }

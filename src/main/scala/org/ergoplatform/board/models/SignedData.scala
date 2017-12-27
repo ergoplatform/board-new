@@ -1,8 +1,15 @@
 package org.ergoplatform.board.models
 
+import io.swagger.annotations.ApiModelProperty
 import play.api.libs.json.Json
 
-case class SignedData(publicKey: String, sign: String)
+import scala.annotation.meta.field
+
+case class SignedData(
+                       @(ApiModelProperty @field)(value = "public key", dataType = "string")
+                       publicKey: String,
+                       @(ApiModelProperty @field)(value = "signed data", dataType = "string")
+                       sign: String)
 
 object SignedData {
   implicit val fmt = Json.format[SignedData]
