@@ -10,14 +10,15 @@ resolvers += Resolver.bintrayRepo("hseeberger", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
 
 val akkaHttpV = "10.0.11"
-val reactiveMongoV = "0.12.7"
+val reactiveMongoV = "0.12.6"
+val reactiveMongoPlayJsonV = reactiveMongoV + "-play26"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % akkaHttpV,
   "com.typesafe.akka" %% "akka-persistence" % "2.5.7",
   "com.typesafe.play" %% "play-json" % "2.6.7",
   "de.heikoseeberger" %% "akka-http-play-json" % "1.18.1",
-  "org.reactivemongo" %% "reactivemongo-play-json" % "0.12.7-play26",
+  "org.reactivemongo" %% "reactivemongo-play-json" % reactiveMongoPlayJsonV,
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoV,
   "org.reactivemongo" %% "reactivemongo-akkastream" % reactiveMongoV,
   "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "2.0.4",

@@ -8,7 +8,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait VoterStore {
 
-  def create(rec: VoterRecord): Future[VoterRecord]
+  def save(rec: VoterRecord): Future[VoterRecord]
 
   def exists(publicKey: String): Future[Boolean]
 
@@ -17,6 +17,8 @@ trait VoterStore {
   def findByKey(publicKey: String): Future[Option[VoterRecord]]
 
   def findByKeyAndElectionId(publicKey: String, electionId: String): Future[Option[VoterRecord]]
+
+  def getByKeyAndElectionId(publicKey: String, electionId: String): Future[VoterRecord]
 }
 
 class VoterStoreImpl(db: DefaultDB)
@@ -29,7 +31,7 @@ class VoterStoreImpl(db: DefaultDB)
     byKeyQuery(publicKey) ++ Json.obj("electionId" -> electionId)
   }
 
-  override def create(rec: VoterRecord): Future[VoterRecord] = insert(rec)
+  override def save(rec: VoterRecord): Future[VoterRecord] = insert(rec)
 
   override def exists(publicKey: String): Future[Boolean] = findOne(byKeyQuery(publicKey)).map(_.nonEmpty)
 
@@ -39,4 +41,14 @@ class VoterStoreImpl(db: DefaultDB)
 
   override def findByKeyAndElectionId(publicKey: String, electionId: String): Future[Option[VoterRecord]] =
     findOne(byKeyQueryAndElectionId(publicKey, electionId))
+
+  def getByKeyAndElectionId(publicKey: String, electionId: String): Future[VoterRecord] =
+    findByKeyAndElectionId(publicKey, electionId).flatMap{
+      case Some(v) =>
+        Future.successful(v)
+      case None =>
+        Future.failed(new NoSuchElementException(
+          s"Can't find voter by publicKey($publicKey) and electionId($electionId)"
+        ))
+    }
 }

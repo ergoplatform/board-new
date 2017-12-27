@@ -34,7 +34,7 @@ class VoteStoreSpec extends MongoFixture with Matchers with FutureHelpers {
   def generateRec: VoteCreate = {
     val m = Random.alphanumeric(5).toString
     val voterSign = generateSignedData(m)
-    VoteCreate(groupId, sectionId, m, voterSign)
+    VoteCreate(electionId, m, voterSign)
   }
 
   val cmd1 = generateRec
@@ -49,8 +49,6 @@ class VoteStoreSpec extends MongoFixture with Matchers with FutureHelpers {
     val res1 = store.create(electionId, cmd1, boardSign1).await
 
     res1.electionId shouldBe electionId
-    res1.groupId shouldBe cmd1.groupId
-    res1.sectionId shouldBe cmd1.sectionId
     res1.m shouldBe cmd1.m
 
     store.getAllByElectionId(electionId, offset, limit).await should contain only res1

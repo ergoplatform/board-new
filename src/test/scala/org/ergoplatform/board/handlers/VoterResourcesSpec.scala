@@ -36,7 +36,7 @@ class VoterResourcesSpec extends FlatSpec
   lazy val route  = Route.seal(handler.routes)
 
   it should "create voter correctly" in {
-    val election = eStore.create(rndElection()).await
+    val election = eStore.save(rndElection()).await
     val electionId = election._id
     val keys = SignService.generateRandomKeyPair()
 
@@ -57,9 +57,9 @@ class VoterResourcesSpec extends FlatSpec
   }
 
   it should "get voter correctly" in {
-    val election = eStore.create(rndElection()).await
+    val election = eStore.save(rndElection()).await
     val electionId = election._id
-    val voter = vStore.create(rndVoter(electionId)).await
+    val voter = vStore.save(rndVoter(electionId)).await
 
     Get(s"/voters/$uuid")  ~> route ~> check {
       status shouldBe StatusCodes.NotFound

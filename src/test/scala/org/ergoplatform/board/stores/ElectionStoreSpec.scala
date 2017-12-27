@@ -16,13 +16,13 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers wi
   it should "check existence correctly" in  { db =>
     val store = new ElectionStoreImpl(db)
     recs.forall{rec => !store.exists(rec._id).await} shouldBe true
-    recs.foreach( rec => store.create(rec).await)
+    recs.foreach( rec => store.save(rec).await)
     recs.forall{rec => store.exists(rec._id).await} shouldBe true
   }
 
   it should "find and get correctly" in { db =>
     val store = new ElectionStoreImpl(db)
-    recs.foreach( rec => store.create(rec).await)
+    recs.foreach( rec => store.save(rec).await)
 
     val Some(found1) = store.find(rec1._id).await
     found1 shouldBe rec1
@@ -41,7 +41,7 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers wi
     val store = new ElectionStoreImpl(db)
     val extendFor = 200L
 
-    store.create(rec1).await
+    store.save(rec1).await
     val updatedRec = store.extend(rec1._id, extendFor).await
 
     updatedRec._id shouldBe rec1._id

@@ -1,12 +1,12 @@
 package org.ergoplatform.board.mongo
 
 import de.flapdoodle.embed.mongo.MongodExecutable
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest.{BeforeAndAfterAll, Suite}
 import reactivemongo.api.{DefaultDB, MongoConnection}
 
 import scala.concurrent.duration._
 
-trait MongoPerSpec extends EmbeddedMongoInstance with MongoClient { self: BeforeAndAfterAll =>
+trait MongoPerSpec extends EmbeddedMongoInstance with MongoClient with BeforeAndAfterAll { self: Suite =>
 
   val driver = new reactivemongo.api.MongoDriver
   var mEx: MongodExecutable = _
@@ -25,5 +25,5 @@ trait MongoPerSpec extends EmbeddedMongoInstance with MongoClient { self: Before
     driver.close(2 seconds)
     mEx.stop()
   }
-
 }
+

@@ -21,7 +21,7 @@ class VoterServiceImpl(eStore: ElectionStore, vStore: VoterStore)(implicit ec: E
     case true =>
       val id = UUID.randomUUID().toString
       val rec = VoterRecord(id, cmd.electionId, cmd.publicKey)
-      vStore.create(rec).map(Voter.fromVoterRecord)
+      vStore.save(rec).map(Voter.fromVoterRecord)
     case false =>
       Future.failed(new NoSuchElementException(s"Can't find election with id = ${cmd.electionId}"))
   }
