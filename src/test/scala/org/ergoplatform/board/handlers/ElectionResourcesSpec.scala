@@ -26,7 +26,7 @@ class ElectionResourcesSpec extends FlatSpec
   import Election._
   import ElectionCreate._
   import VoteCreate._
-  import VoteView._
+  import Vote._
   import akka.http.scaladsl.testkit.RouteTestTimeout
   import akka.testkit.TestDuration
   import org.ergoplatform.board.ApiErrorHandler._
@@ -141,14 +141,14 @@ class ElectionResourcesSpec extends FlatSpec
 
     Post(s"/elections/$electionId/votes", cmd1) ~> route ~> check {
       status shouldBe StatusCodes.Created
-      val data = entityAs[VoteView]
+      val data = entityAs[Vote]
       data.electionId shouldEqual electionId
       data.m shouldEqual m1
     }
 
     Post(s"/elections/$electionId/votes", cmd2) ~> route ~> check {
       status shouldBe StatusCodes.Created
-      val data = entityAs[VoteView]
+      val data = entityAs[Vote]
       data.electionId shouldEqual electionId
       data.m shouldEqual m2
     }
@@ -162,7 +162,7 @@ class ElectionResourcesSpec extends FlatSpec
 
     Get(s"/elections/$electionId/votes") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val data = entityAs[List[VoteView]]
+      val data = entityAs[List[Vote]]
 
       //checking hash chain
       data should have length 2

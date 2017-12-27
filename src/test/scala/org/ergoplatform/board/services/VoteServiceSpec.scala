@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import org.ergoplatform.board.models.VoteRecord
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.protocol.{VoteCreate, VoteView}
+import org.ergoplatform.board.protocol.{VoteCreate, Vote}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.scalatest.{FlatSpecLike, Matchers}
@@ -55,7 +55,7 @@ class VoteServiceSpec extends TestKit(ActorSystem("vote-spec"))
     val result = service.vote(voteCreate).await
 
     //TODO: Add more precise checks not based on object comparison.
-    result shouldEqual VoteView.fromRecord(vote.copy(timestamp = result.timestamp, signedDataByBoard = result.signedDataByBoard))
+    result shouldEqual Vote.fromRecord(vote.copy(timestamp = result.timestamp, signedDataByBoard = result.signedDataByBoard))
   }
 
 }

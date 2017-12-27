@@ -4,13 +4,12 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.ergoplatform.board.mongo.MongoPerSpec
 import org.ergoplatform.board.protocol.{Voter, VoterCreate}
 import org.ergoplatform.board.services.{SignService, VoterServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoterStoreImpl}
+import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
-import play.api.libs.json.Json
 
 class VoterResourcesSpec extends FlatSpec
   with BeforeAndAfterAll
