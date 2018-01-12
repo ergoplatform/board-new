@@ -31,7 +31,7 @@ class HashChainVoteProcessor(electionId: String, keys: KeysRecord) extends Persi
       restoreToDb(voteRecord)
       val cmd = VoteCreate(voteRecord.electionId, voteRecord.m, voteRecord.signedDataByVoter)
       val hash = HashService.hash(Json.stringify(Json.toJson(cmd)), Some(prevHash).filterNot(_.isEmpty))
-      if (hash == voteRecord.hash) {
+      if (hash == voteRecord.proof) {
         logger.info(s"HASH CORRECT FOR VOTE ID ${voteRecord._id} and hash is $hash")
         prevHash = hash
       } else {

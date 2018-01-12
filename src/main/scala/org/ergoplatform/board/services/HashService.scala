@@ -12,4 +12,7 @@ object HashService extends RichBytes with RichString {
     val hashBytes = Blake2b256.hash(toHash)
     hashBytes.to64String
   }
+
+  def hashify(m: String): Array[Byte] = Blake2b256.hash(m.asBytes)
+
 }

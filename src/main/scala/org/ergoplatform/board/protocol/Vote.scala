@@ -30,7 +30,7 @@ object Vote {
     electionId = vr.electionId.toString,
     index = vr.index,
     m = vr.m,
-    hash = vr.hash,
+    hash = vr.proof,
     signedDataByVoter = vr.signedDataByVoter,
     signedDataByBoard = vr.signedDataByBoard,
     timestamp = vr.timestamp
