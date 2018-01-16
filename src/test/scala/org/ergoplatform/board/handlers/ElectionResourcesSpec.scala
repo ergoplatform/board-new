@@ -5,9 +5,8 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import org.ergoplatform.board.FutureHelpers
-import org.ergoplatform.board.models.SignedData
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.protocol._
+import org.ergoplatform.board.protocol.{SignedData, _}
 import org.ergoplatform.board.services.{ElectionServiceImpl, HashService, SignService}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
@@ -70,7 +69,6 @@ class ElectionResourcesSpec extends FlatSpec
       data.start shouldEqual election.start
       data.end shouldEqual election.end
       data.description shouldBe election.description
-      data.publicKey shouldEqual election.publicKey
       data.id shouldEqual election.id
     }
 
@@ -108,7 +106,7 @@ class ElectionResourcesSpec extends FlatSpec
   ignore should "work correctly with basic flow" in {
     val cmd = ElectionCreate(100L, 200L, Some("test"))
 
-    var election: Election = Election("", 0L, 0L, "", None)
+    var election: Election = Election("", 0L, 0L, None)
 
     Post("/elections", cmd) ~> route ~> check {
       status shouldBe StatusCodes.Created
@@ -166,9 +164,6 @@ class ElectionResourcesSpec extends FlatSpec
 
       //checking hash chain
       data should have length 2
-      val sorted = data.sortBy(_.index)
-      sorted(0).hash shouldEqual hash1
-      sorted(1).hash shouldEqual hash2
     }
   }
 }

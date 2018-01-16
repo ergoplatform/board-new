@@ -100,15 +100,4 @@ class ElectionResources(service: ElectionService, timeout: Timeout = Timeout(3 s
   def extendElection = (put & uuidPath & entity(as[ElectionProlong])) { (uuid, cmd) =>
     onSuccess(service.extendDuration(uuid, cmd)) { v => complete(v) }
   }
-
-//votes here
-//  pathPrefix("votes") {
-//    (pathPrefix("count") & get) {
-//      onSuccess(service.getVotesCount(uuid)) { v => complete(v) }
-//    } ~ (post & entity(as[VoteCreate])) { cmd =>
-//      onSuccess(service.vote(uuid, cmd)) { v => complete(StatusCodes.Created -> v) }
-//    } ~ (get & paging) { (o, l) =>
-//      onSuccess(service.getVotes(uuid, o, l)) { v => complete(v) }
-//    }
-//  }
 }

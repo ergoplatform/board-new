@@ -4,11 +4,9 @@ import play.api.libs.json.{Json, OFormat}
 
 case class VoteRecord(_id: String,
                       electionId: String,
+                      voterId: String,
                       index: Long,
-                      proof: String,
                       m: String,
-                      signedDataByVoter: SignedData,
-                      signedDataByBoard: SignedData,
                       timestamp: Long)
 
 object VoteRecord {

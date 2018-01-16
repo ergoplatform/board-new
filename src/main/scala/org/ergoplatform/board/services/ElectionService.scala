@@ -25,8 +25,7 @@ class ElectionServiceImpl(eStore: ElectionStore)(implicit ec: ExecutionContext) 
 
   override def create(cmd: ElectionCreate): Future[Election] = {
     val id = UUID.randomUUID().toString
-    val keys = SignService.generateRandomKeyPair()
-    val election = ElectionRecord(id, cmd.start, cmd.end, keys, cmd.description)
+    val election = ElectionRecord(id, cmd.start, cmd.end, cmd.description)
     eStore.save(election).map(_ => Election.fromRecord(election))
   }
 

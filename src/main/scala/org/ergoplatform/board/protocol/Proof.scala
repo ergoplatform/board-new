@@ -1,4 +1,4 @@
-package org.ergoplatform.board.models
+package org.ergoplatform.board.protocol
 
 import play.api.libs.json.{Json, OFormat}
 

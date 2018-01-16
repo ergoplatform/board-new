@@ -1,6 +1,7 @@
 package org.ergoplatform.board.services
 
 import org.ergoplatform.board.models._
+import org.ergoplatform.board.protocol.{Keys, SignedData}
 import org.ergoplatform.board.utils.{RichBytes, RichString}
 
 import scala.concurrent.Future
@@ -24,17 +25,17 @@ object SignService extends RichBytes with RichString {
     Future.failed(new IllegalArgumentException("Cannot verify signed data"))
   }
 
-  def sign(message: String, keys: KeysRecord): SignedData = {
+  def sign(message: String, keys: Keys): SignedData = {
     val privKeyBytes = PrivateKey @@ keys.privateKey.to64Bytes
     val mBytes = message.asBytes
     val signedBytes = Curve25519.sign(privKeyBytes, mBytes)
     SignedData(keys.publicKey, signedBytes.to64String)
   }
 
-  def generateRandomKeyPair(): KeysRecord = {
+  def generateRandomKeyPair(): Keys = {
     val seed = scorex.utils.Random.randomBytes()
     val (priv, pub) = Curve25519.createKeyPair(seed)
-    KeysRecord(privateKey = priv.to64String, publicKey = pub.to64String)
+    Keys(privateKey = priv.to64String, publicKey = pub.to64String)
   }
 
 }
