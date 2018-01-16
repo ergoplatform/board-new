@@ -11,6 +11,8 @@ import org.ergoplatform.board.stores.{ElectionStore, VoteStore, VoterStore}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
+import scala.language.postfixOps
+
 trait VoteService {
 
   def vote(voteCreate: VoteCreate): Future[Vote]
