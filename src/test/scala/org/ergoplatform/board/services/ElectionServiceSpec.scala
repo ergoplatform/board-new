@@ -1,5 +1,7 @@
 package org.ergoplatform.board.services
 
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.ergoplatform.board.mongo.MongoFixture
 import org.ergoplatform.board.protocol.{ElectionCreate, ElectionProlong}
@@ -8,8 +10,11 @@ import org.scalatest.Matchers
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ElectionServiceSpec extends MongoFixture with Matchers with FutureHelpers with Generators {
-
+class ElectionServiceSpec extends TestKit(ActorSystem("election-spec"))
+  with MongoFixture
+  with Matchers
+  with FutureHelpers
+  with Generators {
 
   it should "create, find, get, exists, prolong election" in { db =>
     val eStore = new ElectionStoreImpl(db)

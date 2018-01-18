@@ -58,11 +58,12 @@ class AvlProcessorSpec extends TestKit(ActorSystem("vote-spec"))
     val v2 = VoteApplication(electionId, uuid, "2")
 
     val vr1 = (ac1 ? v1).mapTo[VoteSuccess].await
+    vr1.proof.postDigest shouldBe (ac1 ? GetCurrentDigest).mapTo[String].await
     val vr2 = (ac1 ? v2).mapTo[VoteSuccess].await
+    vr2.proof.postDigest shouldBe (ac1 ? GetCurrentDigest).mapTo[String].await
 
     (ac1 ? GetVoteFromTree(vr1.vote.index)).mapTo[VoteOption].await shouldBe VoteOption(Some(v1.m))
     (ac1 ? GetVoteFromTree(vr2.vote.index)).mapTo[VoteOption].await shouldBe VoteOption(Some(v2.m))
     (ac1 ? GetVoteFromTree(vr2.vote.index + 1)).mapTo[VoteOption].await shouldBe VoteOption(None)
-
   }
 }
