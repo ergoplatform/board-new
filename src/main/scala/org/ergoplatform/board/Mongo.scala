@@ -6,6 +6,8 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
+import scala.language.postfixOps
+
 trait Mongo { self: Setup =>
 
   val timeoutMongo = 10 seconds

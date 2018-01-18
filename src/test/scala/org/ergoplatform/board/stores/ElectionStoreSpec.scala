@@ -47,7 +47,6 @@ class ElectionStoreSpec extends MongoFixture with Matchers with FutureHelpers wi
     updatedRec._id shouldBe rec1._id
     updatedRec.start shouldBe rec1.start
     updatedRec.end shouldBe (rec1.end + extendFor)
-    updatedRec.keys shouldBe rec1.keys
     updatedRec.description shouldBe rec1.description
   }
 

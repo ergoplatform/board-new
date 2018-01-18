@@ -1,0 +1,347 @@
+openapi: 3.0.0
+info:
+  description: This is a sample Ergo-Board server.
+  version: "0.0.1"
+  title: Ergo Board Backend
+tags:
+  - name: Elections
+  - name: Voters
+  - name: Votes
+paths:
+  /elections:
+    post:
+      tags:
+        - Elections
+      summary: Create election
+      operationId: createElection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElectionCreate'
+        description: Create election object
+        required: true
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+  '/elections/{electionId}':
+    get:
+      tags:
+        - Elections
+      summary: Get election by id
+      operationId: getElection
+      parameters:
+        - name: electionId
+          in: path
+          description: ID of election to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '404':
+          description: Election not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      tags:
+        - Elections
+      summary: Prolong election
+      operationId: prolongElection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElectionProlong'
+        description: Create election object
+        required: true
+      responses:
+        '200':
+          description: Adjusted election
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+  '/elections/{electionId}/exist':
+    get:
+      tags:
+        - Elections
+      summary: Check election by id
+      operationId: checkElection
+      parameters:
+        - name: electionId
+          in: path
+          description: ID of election to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BooleanResultResponse'
+  /voters:
+    post:
+      tags:
+        - Voters
+      summary: Create voter record for corresponding election
+      operationId: createVoter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoterCreate'
+        description: Create election object
+        required: true
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+  '/voters/{voterId}':
+    get:
+      tags:
+        - Voters
+      summary: Find voter
+      operationId: findVoter
+      parameters:
+        - name: voterId
+          in: path
+          description: ID of voter to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '404':
+          description: Voter with such id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /vote:
+    post:
+      tags:
+        - Votes
+      summary: Make a vote
+      operationId: createVote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteCreate'
+        description: Create vote object
+        required: true
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+  '/vote/{voteId}':
+    get:
+      tags:
+        - Votes
+      summary: Find a vote
+      operationId: findVote
+      parameters:
+        - name: voteId
+          in: path
+          description: ID of vote to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '404':
+          description: Voter with such id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+components:
+  schemas:
+
+    Election:
+      type: object
+      properties:
+        id:
+          type: string
+          description: String representantion of UUID
+        start:
+          type: integer
+          format: int64
+          description: Timestamp when this election starts
+        end:
+          type: integer
+          format: int64
+          description: Timestamp when this election stops
+        description:
+          type: string
+
+    ElectionCreate:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: integer
+          format: int64
+          description: Timestamp when this election starts
+        end:
+          type: integer
+          format: int64
+          description: Timestamp when this election stops
+        description:
+          type: string
+
+    ElectionProlong:
+      type: object
+      required:
+        - prolongDuration
+      properties:
+        prolongDuration:
+          type: integer
+          format: int64
+          description: Value of milliseconds to prolong this election for
+
+    Voter:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique voter id for current election
+        electionId:
+          type: string
+          description: String representantion of UUID
+        publicKey:
+          type: string
+          description: Public key that will be used to verify message by board
+
+    VoterCreate:
+      type: object
+      required:
+        - electionId
+        - publicKey
+      properties:
+        electionId:
+          type: string
+          description: String representantion of UUID
+        publicKey:
+          type: string
+          description: Public key that will be used to verify message by board
+
+    Vote:
+      type: object
+      required:
+        - electionId
+        - index
+        - m
+        - timestamp
+      properties:
+        electionId:
+          type: string
+          description: Id of election
+        index:
+          type: integer
+          description: Index number of vote sind election start
+        m:
+          type: string
+          description: Vote message
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp of moment when vote has been processed
+        proof:
+          $ref: '#/components/schemas/Proof'
+
+    VoteCreate:
+      type: object
+      required:
+        - electionId
+        - m
+        - signedData
+      properties:
+        electionId:
+          type: string
+          description: Id of elections
+        m:
+          type: string
+          description: Vote to be voted
+        signedData:
+          $ref: '#/components/schemas/SignedData'
+
+    SignedData:
+      type: object
+      required:
+        - publicKey
+        - sign
+      properties:
+        publicKey:
+          type: string
+          description: Public key of voter
+        sign:
+          type: string
+          description: Signed by voter message to verify his public key and message
+
+    Proof:
+      type: object
+      required:
+        - digest
+        - proof
+        - postDigest
+      properties:
+        digest:
+          type: string
+          description: Digest before vote
+        proof:
+          type: string
+          description: Proof generated by tree after vote has been applied
+        postDigest:
+          type: string
+          description: Digest after vote
+
+    BooleanResultResponse:
+      type: object
+      properties:
+        result:
+          type: boolean
+          description: Result of a performed operation
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          description: Error description
+        statusCode:
+          type: integer
+          description: Status code of error

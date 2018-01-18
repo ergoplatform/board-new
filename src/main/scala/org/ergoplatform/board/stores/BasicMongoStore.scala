@@ -8,10 +8,9 @@ import reactivemongo.play.json.collection._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class BasicMongoStore[Model: TypeTag, ID](db: DefaultDB, collectionName: String)
-                                         (implicit ec: ExecutionContext,
-                                          mFormat: OFormat[Model],
-                                          idFormat: Format[ID]) {
+abstract class BasicMongoStore[Model: TypeTag, ID](db: DefaultDB, collectionName: String)(implicit ec: ExecutionContext,
+                                                                                          mFormat: OFormat[Model],
+                                                                                          idFormat: Format[ID]) {
 
   val collection: JSONCollection = db[JSONCollection](collectionName)
 

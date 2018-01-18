@@ -4,9 +4,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import org.ergoplatform.board.models.SignedData
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.protocol.{VoteCreate, Vote}
+import org.ergoplatform.board.protocol.{SignedData, Vote, VoteCreate}
 import org.ergoplatform.board.services.{SignService, VoteServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 import org.ergoplatform.board.{FutureHelpers, Generators}
@@ -61,7 +60,6 @@ class VoteResourcesSpec extends FlatSpec
       status shouldBe StatusCodes.Created
       val data = responseAs[Vote]
       data.electionId shouldEqual electionId
-      data.signedDataByVoter shouldBe signature
     }
 
     val vote = voteStore.getAllByElectionId(electionId, 0, 10).await.head
@@ -70,8 +68,6 @@ class VoteResourcesSpec extends FlatSpec
       status shouldBe StatusCodes.OK
       val data = responseAs[Vote]
       data.m shouldBe vote.m
-      data.signedDataByVoter shouldBe vote.signedDataByVoter
-      data.signedDataByBoard shouldBe vote.signedDataByBoard
     }
   }
 }

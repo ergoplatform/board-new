@@ -2,7 +2,7 @@ package org.ergoplatform.board
 
 import java.util.UUID
 
-import org.ergoplatform.board.models.{ElectionRecord, KeysRecord, VoterRecord}
+import org.ergoplatform.board.models.{ElectionRecord, VoteRecord, VoterRecord}
 import org.ergoplatform.board.services.SignService
 
 import scala.util.Random
@@ -13,9 +13,8 @@ trait Generators {
     val id = electionId
     val start = System.currentTimeMillis()
     val end = start + Random.nextInt(Int.MaxValue)
-    val keys = SignService.generateRandomKeyPair()
     val desc = Some(Random.alphanumeric.take(20).toString())
-    ElectionRecord(id, start, end, keys, desc)
+    ElectionRecord(id, start, end, desc)
   }
 
   def rndVoter(electionId: String = uuid,
@@ -24,6 +23,16 @@ trait Generators {
     electionId = electionId,
     publicKey = publicKey
   )
+
+  def rndVote(electionId: String = uuid,
+              voterId: String = uuid,
+              publicKey: String = SignService.generateRandomKeyPair().publicKey): VoteRecord = {
+    val id = uuid
+    val index = 0L
+    val timestamp = 0L
+    val m = Random.alphanumeric.take(20).toString()
+    VoteRecord(id, electionId, voterId, index, m, timestamp)
+  }
 
   def uuid: String = UUID.randomUUID().toString
 
