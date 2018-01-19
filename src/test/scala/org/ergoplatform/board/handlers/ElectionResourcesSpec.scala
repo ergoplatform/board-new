@@ -6,8 +6,8 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import org.ergoplatform.board.FutureHelpers
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.protocol.{SignedData, _}
-import org.ergoplatform.board.services.{ElectionServiceImpl, HashService, SignService}
+import org.ergoplatform.board.protocol._
+import org.ergoplatform.board.services.ElectionServiceImpl
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import play.api.libs.json.{JsObject, Json}
@@ -22,10 +22,10 @@ class ElectionResourcesSpec extends FlatSpec
   with FutureHelpers
   with MongoPerSpec {
 
+  override val port = 27020
+
   import Election._
   import ElectionCreate._
-  import VoteCreate._
-  import Vote._
   import akka.http.scaladsl.testkit.RouteTestTimeout
   import akka.testkit.TestDuration
   import org.ergoplatform.board.ApiErrorHandler._
@@ -51,6 +51,14 @@ class ElectionResourcesSpec extends FlatSpec
       data.start shouldEqual 100L
       data.end shouldEqual 200L
       data.description shouldBe Some("test")
+    }
+
+    val election = eStore.findByQuery(JsObject.empty).await.head
+
+    Get(s"/elections/${election._id}/currentHash") ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      val data = entityAs[JsObject]
+      (data \ "result").as[String] should not be empty
     }
 
     val corruptedCmd = Json.obj("start" -> "100", "end" -> 200L)
@@ -103,67 +111,4 @@ class ElectionResourcesSpec extends FlatSpec
     }
   }
 
-  ignore should "work correctly with basic flow" in {
-    val cmd = ElectionCreate(100L, 200L, Some("test"))
-
-    var election: Election = Election("", 0L, 0L, None)
-
-    Post("/elections", cmd) ~> route ~> check {
-      status shouldBe StatusCodes.Created
-      val data = entityAs[Election]
-      election = data
-      data.start shouldEqual 100L
-      data.end shouldEqual 200L
-      data.description shouldBe Some("test")
-    }
-
-    val electionId = election.id
-
-    val keys1 = SignService.generateRandomKeyPair()
-    val keys2 = SignService.generateRandomKeyPair()
-
-    val gId = "1"
-    val sId = "1"
-
-    val m1 = "vote for 1"
-    val m2 = "vote for 2"
-
-    val m1Signed = SignService.sign(m1, keys1)
-    val m2Signed = SignService.sign(m2, keys2)
-
-    val broken = SignedData(keys2.publicKey, m1Signed.sign)
-    val fraudCmd = VoteCreate(electionId, m1, broken)
-
-    val cmd1 = VoteCreate(electionId, m1, m1Signed)
-    val cmd2 = VoteCreate(electionId, m2, m2Signed)
-
-    Post(s"/elections/$electionId/votes", cmd1) ~> route ~> check {
-      status shouldBe StatusCodes.Created
-      val data = entityAs[Vote]
-      data.electionId shouldEqual electionId
-      data.m shouldEqual m1
-    }
-
-    Post(s"/elections/$electionId/votes", cmd2) ~> route ~> check {
-      status shouldBe StatusCodes.Created
-      val data = entityAs[Vote]
-      data.electionId shouldEqual electionId
-      data.m shouldEqual m2
-    }
-
-    Post(s"/elections/$electionId/votes", fraudCmd) ~> route ~> check {
-      status shouldBe StatusCodes.BadRequest
-    }
-
-    val hash1 = HashService.hash(Json.stringify(Json.toJson(cmd1)))
-    val hash2 = HashService.hash(Json.stringify(Json.toJson(cmd2)), Some(hash1))
-
-    Get(s"/elections/$electionId/votes") ~> route ~> check {
-      status shouldBe StatusCodes.OK
-      val data = entityAs[List[Vote]]
-
-      //checking hash chain
-      data should have length 2
-    }
-  }
 }

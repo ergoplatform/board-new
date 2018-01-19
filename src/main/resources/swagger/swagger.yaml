@@ -93,6 +93,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BooleanResultResponse'
+  '/elections/{electionId}/currentHash':
+    get:
+      tags:
+        - Elections
+      summary: Get election current hash
+      operationId: currentHash
+      parameters:
+        - name: electionId
+          in: path
+          description: ID of election which hash to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResultResponse'
+        '404':
+          description: Election not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /voters:
     post:
       tags:
@@ -335,6 +361,13 @@ components:
         result:
           type: boolean
           description: Result of a performed operation
+
+    StringResultResponse:
+          type: object
+          properties:
+            result:
+              type: string
+              description: Result of a performed operation
 
     ApiErrorResponse:
       type: object
