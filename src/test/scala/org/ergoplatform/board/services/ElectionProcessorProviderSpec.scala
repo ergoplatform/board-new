@@ -12,7 +12,9 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class ElectionActorLookupServiceSpec extends TestKit(ActorSystem("proc-lookup-spec"))
+import scala.language.postfixOps
+
+class ElectionProcessorProviderSpec extends TestKit(ActorSystem("proc-lookup-spec"))
   with FlatSpecLike
   with Matchers
   with BeforeAndAfterAll
@@ -32,16 +34,15 @@ class ElectionActorLookupServiceSpec extends TestKit(ActorSystem("proc-lookup-sp
     override def receive: Receive = {
       case "ping" => sender() ! "pong"
       case "hello" => sender() ! "world"
-      case _ => "I DO NOT UNDERSTAND"
+      case _ => sender() ! "I DO NOT UNDERSTAND"
     }
   }
 
-  def props: Props = Props(new DummyActorTheMeansNothing())
-
+  def props: String => Props = _ => Props(new DummyActorTheMeansNothing())
 
   it should "check existence correclty and get actors properly" in {
     val store = system.actorOf(ActiveElectionStore.props)
-    val service = new ElectionActorLookupServiceImpl(props, store)
+    val service = new ElectionProcessorProviderImpl(props, store)
 
     val uuid1 = uuid
 
@@ -58,7 +59,7 @@ class ElectionActorLookupServiceSpec extends TestKit(ActorSystem("proc-lookup-sp
 
   it should "correctly show getAll and remove ref from store" in {
     val store = system.actorOf(ActiveElectionStore.props)
-    val service = new ElectionActorLookupServiceImpl(props, store)
+    val service = new ElectionProcessorProviderImpl(props, store)
 
     val uuid1 = uuid
     val uuid2 = uuid

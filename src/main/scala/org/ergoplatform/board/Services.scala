@@ -1,6 +1,9 @@
 package org.ergoplatform.board
 
-import org.ergoplatform.board.services.{ElectionServiceImpl, VoteServiceImpl, VoterServiceImpl}
+import akka.actor.Props
+import org.ergoplatform.board.actors.ActiveElectionStore
+import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
+import org.ergoplatform.board.services.{ElectionProcessorProviderImpl, ElectionServiceImpl, VoteServiceImpl, VoterServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 
 trait Services { self: Mongo with Setup =>
@@ -10,6 +13,10 @@ trait Services { self: Mongo with Setup =>
 
   lazy val electionService = new ElectionServiceImpl(electionStore)
   lazy val voterService = new VoterServiceImpl(electionStore, voterStore)
-  lazy val voteService = new VoteServiceImpl(electionStore, voteStore, voterStore)
+  lazy val voteService = new VoteServiceImpl(electionStore, voteStore, voterStore, electionProcessorProvider)
 
+  lazy val electionProcessorStore = system.actorOf(ActiveElectionStore.props)
+  lazy val processorProps: String => Props = AvlTreeVoteProcessor.props
+
+  lazy val electionProcessorProvider = new ElectionProcessorProviderImpl(processorProps, electionProcessorStore)
 }

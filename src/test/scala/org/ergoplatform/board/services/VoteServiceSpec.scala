@@ -1,9 +1,11 @@
 package org.ergoplatform.board.services
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
+import org.ergoplatform.board.actors.ActiveElectionStore
 import org.ergoplatform.board.models.VoteRecord
 import org.ergoplatform.board.mongo.MongoPerSpec
+import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.protocol.{Vote, VoteCreate}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 import org.ergoplatform.board.{FutureHelpers, Generators}
@@ -20,10 +22,14 @@ class VoteServiceSpec extends TestKit(ActorSystem("vote-spec"))
 
   override val port = 27020
 
+  lazy val realOneProps: String => Props = AvlTreeVoteProcessor.props
+  lazy val refStore = system.actorOf(ActiveElectionStore.props)
+  lazy val electionProcessorProvider = new ElectionProcessorProviderImpl(realOneProps, refStore)
+
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val voteStore = new VoteStoreImpl(db)
   lazy val voterStore = new VoterStoreImpl(db)
-  lazy val service = new VoteServiceImpl(eStore, voteStore, voterStore)
+  lazy val service = new VoteServiceImpl(eStore, voteStore, voterStore, electionProcessorProvider)
 
   it should "vote and look for vote correctly" in {
     val electionId = uuid

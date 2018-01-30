@@ -1,12 +1,15 @@
 package org.ergoplatform.board.handlers
 
+import akka.actor.Props
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import org.ergoplatform.board.actors.ActiveElectionStore
 import org.ergoplatform.board.mongo.MongoPerSpec
+import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.protocol.{SignedData, Vote, VoteCreate}
-import org.ergoplatform.board.services.{SignService, VoteServiceImpl}
+import org.ergoplatform.board.services.{ElectionProcessorProviderImpl, SignService, VoteServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
 import org.ergoplatform.board.{FutureHelpers, Generators}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
@@ -30,10 +33,14 @@ class VoteResourcesSpec extends FlatSpec
 
   implicit val timeout = RouteTestTimeout(15.seconds dilated)
 
+  lazy val realOneProps: String => Props = AvlTreeVoteProcessor.props
+  lazy val refStore = system.actorOf(ActiveElectionStore.props)
+  lazy val electionProcessorProvider = new ElectionProcessorProviderImpl(realOneProps, refStore)
+
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val vStore = new VoterStoreImpl(db)
   lazy val voteStore = new VoteStoreImpl(db)
-  lazy val service = new VoteServiceImpl(eStore, voteStore, vStore)
+  lazy val service = new VoteServiceImpl(eStore, voteStore, vStore, electionProcessorProvider)
   lazy val handler = new VoteResources(service)
   lazy val route  = Route.seal(handler.routes)
 

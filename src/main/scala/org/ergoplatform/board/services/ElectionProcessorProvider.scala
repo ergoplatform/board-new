@@ -6,12 +6,13 @@ import akka.util.Timeout
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
+import scala.language.postfixOps
 
 /**
   * This service will be responsible for storing active elections actor refs.
   * Cause restoring actor ref each time from events is a huge time waste.
   */
-trait ElectionActorLookupService {
+trait ElectionProcessorProvider {
 
   /**
     * Asking for actor ref for election processor by its id.
@@ -38,11 +39,11 @@ trait ElectionActorLookupService {
 }
 
 /**
-  * props - Props from election proceesor actor
+  * props - Props from election processor actor
   * refStore - ActorRef to ActiveElectionStore actor
   */
-class ElectionActorLookupServiceImpl(props: Props, refStore: ActorRef)(implicit as: ActorSystem)
-  extends ElectionActorLookupService {
+class ElectionProcessorProviderImpl(props: String => Props, refStore: ActorRef)(implicit as: ActorSystem)
+  extends ElectionProcessorProvider {
 
   import akka.pattern.ask
   import org.ergoplatform.board.actors.ActiveElectionStore._
@@ -61,7 +62,7 @@ class ElectionActorLookupServiceImpl(props: Props, refStore: ActorRef)(implicit 
     .mapTo[Found].map(_.result).flatMap {
       case Some(ref) => Future.successful(ref)
       case None =>
-        val createdRef = as.actorOf(props, electionId)
+        val createdRef = as.actorOf(props.apply(electionId), electionId)
         (refStore ? Add(electionId, createdRef)).mapTo[Ok.type].map { _ => createdRef }
     }
 
