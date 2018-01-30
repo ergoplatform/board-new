@@ -8,7 +8,7 @@ import org.ergoplatform.board.mongo.MongoPerSpec
 import org.ergoplatform.board.protocol.{SignedData, Vote, VoteCreate}
 import org.ergoplatform.board.services.{SignService, VoteServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
-import org.ergoplatform.board.{FutureHelpers, Generators}
+import org.ergoplatform.board.{ElectionProcessorProviderHelper, FutureHelpers, Generators}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class VoteResourcesSpec extends FlatSpec
@@ -18,7 +18,8 @@ class VoteResourcesSpec extends FlatSpec
   with PlayJsonSupport
   with FutureHelpers
   with MongoPerSpec
-  with Generators {
+  with Generators
+  with ElectionProcessorProviderHelper {
 
   override val port = 27020
 
@@ -33,7 +34,7 @@ class VoteResourcesSpec extends FlatSpec
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val vStore = new VoterStoreImpl(db)
   lazy val voteStore = new VoteStoreImpl(db)
-  lazy val service = new VoteServiceImpl(eStore, voteStore, vStore)
+  lazy val service = new VoteServiceImpl(eStore, voteStore, vStore, electionProcessorProvider)
   lazy val handler = new VoteResources(service)
   lazy val route  = Route.seal(handler.routes)
 
@@ -41,7 +42,7 @@ class VoteResourcesSpec extends FlatSpec
     val election = eStore.save(rndElection()).await
     val electionId = election._id
     val voterKeys = SignService.generateRandomKeyPair()
-    val voter = vStore.save(rndVoter(electionId, voterKeys.publicKey)).await
+    vStore.save(rndVoter(electionId, voterKeys.publicKey)).await
 
     val randomKeys = SignService.generateRandomKeyPair()
     val wrongSignedData = SignedData(randomKeys.publicKey, "hoho")

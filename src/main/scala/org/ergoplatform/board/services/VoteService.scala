@@ -1,17 +1,14 @@
 package org.ergoplatform.board.services
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
-import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.persistence.AvlTreeVoteProcessor.{VoteApplication, VoteFailure, VoteResult, VoteSuccess}
 import org.ergoplatform.board.protocol.{Vote, VoteCreate}
 import org.ergoplatform.board.stores.{ElectionStore, VoteStore, VoterStore}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-
-import scala.language.postfixOps
 
 trait VoteService {
 
@@ -20,7 +17,10 @@ trait VoteService {
   def get(id: String): Future[Vote]
 }
 
-class VoteServiceImpl(eStore: ElectionStore, voteStore: VoteStore, voterStore: VoterStore)
+class VoteServiceImpl(eStore: ElectionStore,
+                      voteStore: VoteStore,
+                      voterStore: VoterStore,
+                      electionProcessorProvider: ElectionProcessorProvider)
                      (implicit ec: ExecutionContext, ac: ActorSystem) extends VoteService {
 
   implicit val timeout = Timeout(10 seconds)
@@ -41,7 +41,7 @@ class VoteServiceImpl(eStore: ElectionStore, voteStore: VoteStore, voterStore: V
     voter <- voterStore.getByKeyAndElectionId(voteCreate.signature.publicKey, e._id)
     voterId = voter._id
     _ <- voteExistsValidation(electionId, voterId)
-    actor = ac.actorOf(AvlTreeVoteProcessor.props(e._id), e._id)
+    actor <- getElectionProcessor(e._id)
     voteSuccess <- (actor ? VoteApplication(electionId, voterId, m)).mapTo[VoteResult].flatMap {
       case x: VoteSuccess => Future.successful(x)
       case y: VoteFailure => Future.failed(y.reason)
@@ -50,4 +50,6 @@ class VoteServiceImpl(eStore: ElectionStore, voteStore: VoteStore, voterStore: V
   } yield Vote.fromRecord(saved, Some(voteSuccess.proof))
 
   override def get(id: String): Future[Vote] = voteStore.get(id).map(v => Vote.fromRecord(v))
+
+  private def getElectionProcessor(electionId: String): Future[ActorRef] = electionProcessorProvider.getById(electionId)
 }

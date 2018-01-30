@@ -9,8 +9,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Try
 
-import scala.language.postfixOps
-
 object App extends Setup with Mongo with Services with Rest {
 
   override implicit val system = ActorSystem("board-system")
