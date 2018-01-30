@@ -1,17 +1,14 @@
 package org.ergoplatform.board.handlers
 
-import akka.actor.Props
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import org.ergoplatform.board.actors.ActiveElectionStore
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.protocol.{SignedData, Vote, VoteCreate}
-import org.ergoplatform.board.services.{ElectionProcessorProviderImpl, SignService, VoteServiceImpl}
+import org.ergoplatform.board.services.{SignService, VoteServiceImpl}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
-import org.ergoplatform.board.{FutureHelpers, Generators}
+import org.ergoplatform.board.{ElectionProcessorProviderHelper, FutureHelpers, Generators}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class VoteResourcesSpec extends FlatSpec
@@ -21,7 +18,8 @@ class VoteResourcesSpec extends FlatSpec
   with PlayJsonSupport
   with FutureHelpers
   with MongoPerSpec
-  with Generators {
+  with Generators
+  with ElectionProcessorProviderHelper {
 
   override val port = 27020
 
@@ -32,10 +30,6 @@ class VoteResourcesSpec extends FlatSpec
   import scala.concurrent.duration._
 
   implicit val timeout = RouteTestTimeout(15.seconds dilated)
-
-  lazy val realOneProps: String => Props = AvlTreeVoteProcessor.props
-  lazy val refStore = system.actorOf(ActiveElectionStore.props)
-  lazy val electionProcessorProvider = new ElectionProcessorProviderImpl(realOneProps, refStore)
 
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val vStore = new VoterStoreImpl(db)
@@ -48,7 +42,7 @@ class VoteResourcesSpec extends FlatSpec
     val election = eStore.save(rndElection()).await
     val electionId = election._id
     val voterKeys = SignService.generateRandomKeyPair()
-    val voter = vStore.save(rndVoter(electionId, voterKeys.publicKey)).await
+    vStore.save(rndVoter(electionId, voterKeys.publicKey)).await
 
     val randomKeys = SignService.generateRandomKeyPair()
     val wrongSignedData = SignedData(randomKeys.publicKey, "hoho")

@@ -12,8 +12,6 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-import scala.language.postfixOps
-
 class ElectionProcessorProviderSpec extends TestKit(ActorSystem("proc-lookup-spec"))
   with FlatSpecLike
   with Matchers

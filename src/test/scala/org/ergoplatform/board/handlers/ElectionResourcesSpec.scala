@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import org.ergoplatform.board.FutureHelpers
+import org.ergoplatform.board.{ElectionProcessorProviderHelper, FutureHelpers}
 import org.ergoplatform.board.mongo.MongoPerSpec
 import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.services.ElectionServiceImpl
@@ -20,7 +20,7 @@ class ElectionResourcesSpec extends FlatSpec
   with ScalatestRouteTest
   with PlayJsonSupport
   with FutureHelpers
-  with MongoPerSpec {
+  with MongoPerSpec with ElectionProcessorProviderHelper {
 
   override val port = 27020
 
@@ -36,7 +36,7 @@ class ElectionResourcesSpec extends FlatSpec
 
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val vStore = new VoteStoreImpl(db)
-  lazy val service = new ElectionServiceImpl(eStore)
+  lazy val service = new ElectionServiceImpl(eStore, electionProcessorProvider)
   lazy val handler = new ElectionResources(service)
   lazy val route  = Route.seal(handler.routes)
 

@@ -11,7 +11,7 @@ trait Services { self: Mongo with Setup =>
   lazy val voteStore = new VoteStoreImpl(db)
   lazy val voterStore = new VoterStoreImpl(db)
 
-  lazy val electionService = new ElectionServiceImpl(electionStore)
+  lazy val electionService = new ElectionServiceImpl(electionStore, electionProcessorProvider)
   lazy val voterService = new VoterServiceImpl(electionStore, voterStore)
   lazy val voteService = new VoteServiceImpl(electionStore, voteStore, voterStore, electionProcessorProvider)
 

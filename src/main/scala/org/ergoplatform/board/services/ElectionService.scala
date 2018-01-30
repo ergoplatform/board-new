@@ -2,17 +2,15 @@ package org.ergoplatform.board.services
 
 import java.util.UUID
 
-import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import org.ergoplatform.board.models.ElectionRecord
-import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.persistence.AvlTreeVoteProcessor.GetCurrentDigest
 import org.ergoplatform.board.protocol._
 import org.ergoplatform.board.stores.ElectionStore
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ElectionService {
 
@@ -29,8 +27,8 @@ trait ElectionService {
   def currentHash(electionId: String): Future[String]
 }
 
-class ElectionServiceImpl(eStore: ElectionStore)
-                         (implicit ec: ExecutionContext, ac: ActorSystem) extends ElectionService {
+class ElectionServiceImpl(eStore: ElectionStore, electionProcessorProvider: ElectionProcessorProvider)
+                         (implicit ec: ExecutionContext) extends ElectionService {
 
   implicit val timeout = Timeout(15 seconds)
 
@@ -52,7 +50,7 @@ class ElectionServiceImpl(eStore: ElectionStore)
 
   override def currentHash(electionId: String): Future[String] = for {
     _ <- eStore.get(electionId)
-    actor = ac.actorOf(AvlTreeVoteProcessor.props(electionId), electionId)
+    actor <- electionProcessorProvider.getById(electionId)
     hash <- (actor ? GetCurrentDigest).mapTo[String]
   } yield hash
 }

@@ -33,4 +33,4 @@ libraryDependencies ++= Seq(
 
 parallelExecution in Test := false
 
-scalacOptions := Seq("-feature")
+scalacOptions := Seq.empty

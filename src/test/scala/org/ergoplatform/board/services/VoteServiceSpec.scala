@@ -1,14 +1,12 @@
 package org.ergoplatform.board.services
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import org.ergoplatform.board.actors.ActiveElectionStore
 import org.ergoplatform.board.models.VoteRecord
 import org.ergoplatform.board.mongo.MongoPerSpec
-import org.ergoplatform.board.persistence.AvlTreeVoteProcessor
 import org.ergoplatform.board.protocol.{Vote, VoteCreate}
 import org.ergoplatform.board.stores.{ElectionStoreImpl, VoteStoreImpl, VoterStoreImpl}
-import org.ergoplatform.board.{FutureHelpers, Generators}
+import org.ergoplatform.board.{ElectionProcessorProviderHelper, FutureHelpers, Generators}
 import org.scalatest.{FlatSpecLike, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -18,13 +16,10 @@ class VoteServiceSpec extends TestKit(ActorSystem("vote-spec"))
   with MongoPerSpec
   with Matchers
   with FutureHelpers
-  with Generators {
+  with Generators
+  with ElectionProcessorProviderHelper{
 
   override val port = 27020
-
-  lazy val realOneProps: String => Props = AvlTreeVoteProcessor.props
-  lazy val refStore = system.actorOf(ActiveElectionStore.props)
-  lazy val electionProcessorProvider = new ElectionProcessorProviderImpl(realOneProps, refStore)
 
   lazy val eStore = new ElectionStoreImpl(db)
   lazy val voteStore = new VoteStoreImpl(db)

@@ -6,8 +6,6 @@ import akka.util.Timeout
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-import scala.language.postfixOps
-
 /**
   * This service will be responsible for storing active elections actor refs.
   * Cause restoring actor ref each time from events is a huge time waste.
