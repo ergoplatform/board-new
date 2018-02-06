@@ -1,4 +1,4 @@
-# board-new [![Build Status](https://travis-ci.org/ergoplatform/board-new.svg?branch=master)](https://travis-ci.org/ergoplatform/board-new)
+# board-new [![Build Status](https://travis-ci.org/ergoplatform/board-new.svg?branch=master)](https://travis-ci.org/ergoplatform/board-new) [![codecov](https://codecov.io/gh/ergoplatform/board-new/branch/master/graph/badge.svg)](https://codecov.io/gh/ergoplatform/board-new)
 
 To run this board you need to start mongo. There is two options.
 
