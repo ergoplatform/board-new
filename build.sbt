@@ -34,3 +34,5 @@ libraryDependencies ++= Seq(
 parallelExecution in Test := false
 
 scalacOptions := Seq.empty
+
+coverageExcludedPackages := "org.ergoplatform.board.utils.*"
