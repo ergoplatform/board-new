@@ -35,4 +35,4 @@ parallelExecution in Test := false
 
 scalacOptions := Seq.empty
 
-coverageExcludedPackages := "org.ergoplatform.board.utils.*"
+coverageExcludedPackages := "org.ergoplatform.board.utils\\..*;org.ergoplatform.board.App;org.ergoplatform.board.Mongo"
