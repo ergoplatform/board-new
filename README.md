@@ -9,3 +9,4 @@ To run this board you need to start mongo. There is two options.
 The API will be available by default on `localhost:8080` but you can configure it via adjusting `application.conf` file.
 
 Go to `localhost:8080/swagger/` to see OpenApi docs.
+
